@@ -73,6 +73,9 @@ Vec3s getSupport(const ShapeBase* shape, const Vec3s& dir, int& hint) {
     case GEOM_CYLINDER:
       CALL_GET_SHAPE_SUPPORT(Cylinder);
       break;
+    case GEOM_TRUNCATEDCONE:
+      CALL_GET_SHAPE_SUPPORT(TruncatedCone);
+      break;
     case GEOM_CONVEX16:
       CALL_GET_SHAPE_SUPPORT(ConvexBaseTpl<Triangle16::IndexType>);
       break;
@@ -304,6 +307,54 @@ void getShapeSupport(const Cylinder* cylinder, const Vec3s& dir, Vec3s& support,
 getShapeSupportTplInstantiation(Cylinder);
 
 // ============================================================================
+template <int _SupportOptions>
+void getShapeSupport(const TruncatedCone* tcone, const Vec3s& dir,
+                     Vec3s& support, int& /*unused*/,
+                     ShapeSupportData& /*unused*/) {
+  static const Scalar dummy_precision =
+      Eigen::NumTraits<Scalar>::dummy_precision();
+
+  // The truncated cone is the convex hull of two disks: radiusBottom at
+  // z = -h and radiusTop at z = h. Its support point is therefore always on
+  // one of these two disks: whichever of the two maximizes the support value.
+  // The inflate value is simply to make the specialized functions with
+  // truncated cone have a preferred side for edge cases.
+  static const Scalar inflate = 1 + Scalar(1e-10);
+  Scalar h = tcone->halfLength;
+  Scalar rb = tcone->radiusBottom;
+  Scalar rt = tcone->radiusTop;
+
+  if (dir.head<2>().isZero(dummy_precision)) {
+    support.head<2>().setZero();
+    if (dir[2] > dummy_precision) {
+      support[2] = inflate * h;
+    } else {
+      support[2] = -inflate * h;
+    }
+  } else {
+    Scalar zdist = std::sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+
+    Scalar value_top = rt * zdist + h * dir[2];
+    Scalar value_bottom = rb * zdist - h * dir[2];
+
+    if (value_top >= value_bottom) {
+      Scalar rad = rt / zdist;
+      support.head<2>() = rad * dir.head<2>();
+      support[2] = h;
+    } else {
+      Scalar rad = rb / zdist;
+      support.head<2>() = rad * dir.head<2>();
+      support[2] = -h;
+    }
+  }
+
+  if (_SupportOptions == SupportOptions::WithSweptSphere) {
+    support += tcone->getSweptSphereRadius() * dir.normalized();
+  }
+}
+getShapeSupportTplInstantiation(TruncatedCone);
+
+// ============================================================================
 template <int _SupportOptions, typename IndexType>
 void getShapeSupportLog(const ConvexBaseTpl<IndexType>* convex,
                         const Vec3s& dir, Vec3s& support, int& hint,
@@ -481,6 +532,9 @@ void getSupportSet(const ShapeBase* shape, SupportSet& support_set, int& hint,
       break;
     case GEOM_CYLINDER:
       CALL_GET_SHAPE_SUPPORT_SET(Cylinder);
+      break;
+    case GEOM_TRUNCATEDCONE:
+      CALL_GET_SHAPE_SUPPORT_SET(TruncatedCone);
       break;
     case GEOM_CONVEX16:
       CALL_GET_SHAPE_SUPPORT_SET(ConvexBaseTpl<Triangle16::IndexType>);
@@ -809,6 +863,69 @@ void getShapeSupportSet(const Cylinder* cylinder, SupportSet& support_set,
   }
 }
 getShapeSupportSetTplInstantiation(Cylinder);
+
+// ============================================================================
+template <int _SupportOptions>
+void getShapeSupportSet(const TruncatedCone* tcone, SupportSet& support_set,
+                        int& hint /*unused*/,
+                        ShapeSupportData& support_data /*unused*/,
+                        size_t num_sampled_supports, Scalar tol) {
+  assert(tol > 0);
+  support_set.points().clear();
+
+  Vec3s support;
+  const Vec3s& support_dir = support_set.getNormal();
+  getShapeSupport<SupportOptions::NoSweptSphere>(tcone, support_dir, support,
+                                                 hint, support_data);
+  const Scalar support_value = support.dot(support_dir);
+
+  // The following is very similar to what is done for Cylinder's support set
+  // computation, generalized to the truncated cone's two different radii.
+  const Scalar r =
+      support_dir[2] <= 0 ? tcone->radiusBottom : tcone->radiusTop;
+  const Scalar z =
+      support_dir[2] <= 0 ? -tcone->halfLength : tcone->halfLength;
+  const Vec3s p1(r * support_dir[0], r * support_dir[1], z);
+  const Vec3s p2(-r * support_dir[0], -r * support_dir[1], z);
+
+  if ((support_value - support_dir.dot(p1) <= tol) &&
+      (support_value - support_dir.dot(p2) <= tol)) {
+    const Scalar angle_increment =
+        Scalar(2 * EIGEN_PI) / (Scalar(num_sampled_supports));
+    for (size_t i = 0; i < num_sampled_supports; ++i) {
+      const Scalar theta = (Scalar)(i)*angle_increment;
+      Vec3s point_on_circle(r * std::cos(theta), r * std::sin(theta), z);
+      assert(std::abs(support_dir.dot(support - point_on_circle)) <= tol);
+      if (_SupportOptions == SupportOptions::WithSweptSphere) {
+        point_on_circle += tcone->getSweptSphereRadius() * support_dir;
+      }
+      support_set.addPoint(point_on_circle);
+    }
+  } else {
+    // There are two potential supports to add: one on each disk of the
+    // truncated cone.
+    Vec3s point_on_lower_circle = Vec3s(tcone->radiusBottom * support_dir[0],  //
+                                        tcone->radiusBottom * support_dir[1],  //
+                                        -tcone->halfLength);
+    if (support_value - support_dir.dot(point_on_lower_circle) <= tol) {
+      if (_SupportOptions == SupportOptions::WithSweptSphere) {
+        point_on_lower_circle += tcone->getSweptSphereRadius() * support_dir;
+      }
+      support_set.addPoint(point_on_lower_circle);
+    }
+
+    Vec3s point_on_upper_circle = Vec3s(tcone->radiusTop * support_dir[0],  //
+                                        tcone->radiusTop * support_dir[1],  //
+                                        tcone->halfLength);
+    if (support_value - support_dir.dot(point_on_upper_circle) <= tol) {
+      if (_SupportOptions == SupportOptions::WithSweptSphere) {
+        point_on_upper_circle += tcone->getSweptSphereRadius() * support_dir;
+      }
+      support_set.addPoint(point_on_upper_circle);
+    }
+  }
+}
+getShapeSupportSetTplInstantiation(TruncatedCone);
 
 // ============================================================================
 template <int _SupportOptions, typename IndexType>

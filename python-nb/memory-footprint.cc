@@ -19,6 +19,7 @@ void exposeComputeMemoryFootprint(nb::module_& m) {
   defComputeMemoryFootprint<Cone>(m);
   defComputeMemoryFootprint<Capsule>(m);
   defComputeMemoryFootprint<Cylinder>(m);
+  defComputeMemoryFootprint<TruncatedCone>(m);
   defComputeMemoryFootprint<Box>(m);
   defComputeMemoryFootprint<Plane>(m);
   defComputeMemoryFootprint<Halfspace>(m);

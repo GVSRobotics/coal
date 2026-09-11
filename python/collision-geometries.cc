@@ -270,6 +270,7 @@ void exposeComputeMemoryFootprint() {
   defComputeMemoryFootprint<Cone>();
   defComputeMemoryFootprint<Capsule>();
   defComputeMemoryFootprint<Cylinder>();
+  defComputeMemoryFootprint<TruncatedCone>();
   defComputeMemoryFootprint<Box>();
   defComputeMemoryFootprint<Plane>();
   defComputeMemoryFootprint<Halfspace>();
@@ -424,6 +425,24 @@ void exposeShapes() {
 #endif
       ;
 
+  class_<TruncatedCone, bases<ShapeBase>, shared_ptr<TruncatedCone>>(
+      "TruncatedCone", doxygen::class_doc<TruncatedCone>(), no_init)
+      .def(dv::init<TruncatedCone>())
+      .def(dv::init<TruncatedCone, Scalar, Scalar, Scalar>())
+      .def(dv::init<TruncatedCone, const TruncatedCone&>())
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, radiusBottom)
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, radiusTop)
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, halfLength)
+      .def("clone", &TruncatedCone::clone,
+           doxygen::member_func_doc(&TruncatedCone::clone),
+           return_value_policy<manage_new_object>())
+      .def_pickle(PickleObject<TruncatedCone>())
+      .def(SerializableVisitor<TruncatedCone>())
+#if EIGENPY_VERSION_AT_LEAST(3, 8, 0)
+      .def(eigenpy::IdVisitor<TruncatedCone>())
+#endif
+      ;
+
   class_<Halfspace, bases<ShapeBase>, shared_ptr<Halfspace>>(
       "Halfspace", doxygen::class_doc<Halfspace>(), no_init)
       .def(dv::init<Halfspace, const Vec3s&, Scalar>())
@@ -559,6 +578,7 @@ void exposeCollisionGeometries() {
         .value("GEOM_CAPSULE", GEOM_CAPSULE)
         .value("GEOM_CONE", GEOM_CONE)
         .value("GEOM_CYLINDER", GEOM_CYLINDER)
+        .value("GEOM_TRUNCATEDCONE", GEOM_TRUNCATEDCONE)
         .value("GEOM_CONVEX", GEOM_CONVEX)
         .value("GEOM_PLANE", GEOM_PLANE)
         .value("GEOM_HALFSPACE", GEOM_HALFSPACE)

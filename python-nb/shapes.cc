@@ -215,6 +215,19 @@ void exposeShapes(nb::module_& m) {
       .def(python::v2::SerializableVisitor<Cylinder>())
       .def(nanoeigenpy::IdVisitor());
 
+  nb::class_<TruncatedCone, ShapeBase>(m, "TruncatedCone")
+      .def(nb::init<>())
+      .def(nb::init<Scalar, Scalar, Scalar>(), "radiusBottom_"_a,
+           "radiusTop_"_a, "lz_"_a)
+      .def(nb::init<const TruncatedCone&>(), "other_"_a)
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, radiusBottom)
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, radiusTop)
+      .DEF_RW_CLASS_ATTRIB(TruncatedCone, halfLength)
+      .def("clone", &TruncatedCone::clone, nb::rv_policy::take_ownership)
+      .def(python::v2::PickleVisitor<TruncatedCone>())
+      .def(python::v2::SerializableVisitor<TruncatedCone>())
+      .def(nanoeigenpy::IdVisitor());
+
   nb::class_<Halfspace, ShapeBase>(m, "Halfspace")
       .def(nb::init<>())
       .def(nb::init<const Vec3s&, Scalar>(), "n_"_a, "d_"_a)

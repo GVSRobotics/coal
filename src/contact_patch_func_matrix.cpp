@@ -143,6 +143,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_BOX][GEOM_SPHERE]          = &ShapeShapeContactPatch<Box, Sphere>;
   contact_patch_matrix[GEOM_BOX][GEOM_CAPSULE]         = &ShapeShapeContactPatch<Box, Capsule>;
   contact_patch_matrix[GEOM_BOX][GEOM_CONE]            = &ShapeShapeContactPatch<Box, Cone>;
+  contact_patch_matrix[GEOM_BOX][GEOM_TRUNCATEDCONE]            = &ShapeShapeContactPatch<Box, TruncatedCone>;
   contact_patch_matrix[GEOM_BOX][GEOM_CYLINDER]        = &ShapeShapeContactPatch<Box, Cylinder>;
   contact_patch_matrix[GEOM_BOX][GEOM_CONVEX16]        = &ShapeShapeContactPatch<Box, ConvexBase16>;
   contact_patch_matrix[GEOM_BOX][GEOM_CONVEX32]        = &ShapeShapeContactPatch<Box, ConvexBase32>;
@@ -155,6 +156,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_SPHERE][GEOM_SPHERE]       = &ShapeShapeContactPatch<Sphere, Sphere>;
   contact_patch_matrix[GEOM_SPHERE][GEOM_CAPSULE]      = &ShapeShapeContactPatch<Sphere, Capsule>;
   contact_patch_matrix[GEOM_SPHERE][GEOM_CONE]         = &ShapeShapeContactPatch<Sphere, Cone>;
+  contact_patch_matrix[GEOM_SPHERE][GEOM_TRUNCATEDCONE]         = &ShapeShapeContactPatch<Sphere, TruncatedCone>;
   contact_patch_matrix[GEOM_SPHERE][GEOM_CYLINDER]     = &ShapeShapeContactPatch<Sphere, Cylinder>;
   contact_patch_matrix[GEOM_SPHERE][GEOM_CONVEX16]     = &ShapeShapeContactPatch<Sphere, ConvexBase16>;
   contact_patch_matrix[GEOM_SPHERE][GEOM_CONVEX32]     = &ShapeShapeContactPatch<Sphere, ConvexBase32>;
@@ -167,6 +169,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_SPHERE]    = &ShapeShapeContactPatch<Ellipsoid, Sphere>;
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_CAPSULE]   = &ShapeShapeContactPatch<Ellipsoid, Capsule>;
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_CONE]      = &ShapeShapeContactPatch<Ellipsoid, Cone>;
+  contact_patch_matrix[GEOM_ELLIPSOID][GEOM_TRUNCATEDCONE]      = &ShapeShapeContactPatch<Ellipsoid, TruncatedCone>;
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_CYLINDER]  = &ShapeShapeContactPatch<Ellipsoid, Cylinder>;
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_CONVEX16]  = &ShapeShapeContactPatch<Ellipsoid, ConvexBase16>;
   contact_patch_matrix[GEOM_ELLIPSOID][GEOM_CONVEX32]  = &ShapeShapeContactPatch<Ellipsoid, ConvexBase32>;
@@ -179,6 +182,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_CAPSULE][GEOM_SPHERE]      = &ShapeShapeContactPatch<Capsule, Sphere>;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_CAPSULE]     = &ShapeShapeContactPatch<Capsule, Capsule>;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_CONE]        = &ShapeShapeContactPatch<Capsule, Cone>;
+  contact_patch_matrix[GEOM_CAPSULE][GEOM_TRUNCATEDCONE]        = &ShapeShapeContactPatch<Capsule, TruncatedCone>;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_CYLINDER]    = &ShapeShapeContactPatch<Capsule, Cylinder>;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_CONVEX16]    = &ShapeShapeContactPatch<Capsule, ConvexBase16>;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_CONVEX32]    = &ShapeShapeContactPatch<Capsule, ConvexBase32>;
@@ -188,21 +192,35 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_CAPSULE][GEOM_TRIANGLE]    = &ShapeShapeContactPatch<Capsule, TriangleP>;
 
   contact_patch_matrix[GEOM_CONE][GEOM_BOX]            = &ShapeShapeContactPatch<Cone, Box>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_BOX]            = &ShapeShapeContactPatch<TruncatedCone, Box>;
   contact_patch_matrix[GEOM_CONE][GEOM_SPHERE]         = &ShapeShapeContactPatch<Cone, Sphere>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_SPHERE]         = &ShapeShapeContactPatch<TruncatedCone, Sphere>;
   contact_patch_matrix[GEOM_CONE][GEOM_CAPSULE]        = &ShapeShapeContactPatch<Cone, Capsule>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_CAPSULE]        = &ShapeShapeContactPatch<TruncatedCone, Capsule>;
   contact_patch_matrix[GEOM_CONE][GEOM_CONE]           = &ShapeShapeContactPatch<Cone, Cone>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_TRUNCATEDCONE]           = &ShapeShapeContactPatch<TruncatedCone, TruncatedCone>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_CONE]                     = &ShapeShapeContactPatch<TruncatedCone, Cone>;
+  contact_patch_matrix[GEOM_CONE][GEOM_TRUNCATEDCONE]                     = &ShapeShapeContactPatch<Cone, TruncatedCone>;
   contact_patch_matrix[GEOM_CONE][GEOM_CYLINDER]       = &ShapeShapeContactPatch<Cone, Cylinder>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_CYLINDER]       = &ShapeShapeContactPatch<TruncatedCone, Cylinder>;
   contact_patch_matrix[GEOM_CONE][GEOM_CONVEX16]       = &ShapeShapeContactPatch<Cone, ConvexBase16>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_CONVEX16]       = &ShapeShapeContactPatch<TruncatedCone, ConvexBase16>;
   contact_patch_matrix[GEOM_CONE][GEOM_CONVEX32]       = &ShapeShapeContactPatch<Cone, ConvexBase32>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_CONVEX32]       = &ShapeShapeContactPatch<TruncatedCone, ConvexBase32>;
   contact_patch_matrix[GEOM_CONE][GEOM_PLANE]          = &ShapeShapeContactPatch<Cone, Plane>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_PLANE]          = &ShapeShapeContactPatch<TruncatedCone, Plane>;
   contact_patch_matrix[GEOM_CONE][GEOM_HALFSPACE]      = &ShapeShapeContactPatch<Cone, Halfspace>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_HALFSPACE]      = &ShapeShapeContactPatch<TruncatedCone, Halfspace>;
   contact_patch_matrix[GEOM_CONE][GEOM_ELLIPSOID]      = &ShapeShapeContactPatch<Cone, Ellipsoid>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_ELLIPSOID]      = &ShapeShapeContactPatch<TruncatedCone, Ellipsoid>;
   contact_patch_matrix[GEOM_CONE][GEOM_TRIANGLE]       = &ShapeShapeContactPatch<Cone, TriangleP>;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_TRIANGLE]       = &ShapeShapeContactPatch<TruncatedCone, TriangleP>;
 
   contact_patch_matrix[GEOM_CYLINDER][GEOM_BOX]        = &ShapeShapeContactPatch<Cylinder, Box>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_SPHERE]     = &ShapeShapeContactPatch<Cylinder, Sphere>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_CAPSULE]    = &ShapeShapeContactPatch<Cylinder, Capsule>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_CONE]       = &ShapeShapeContactPatch<Cylinder, Cone>;
+  contact_patch_matrix[GEOM_CYLINDER][GEOM_TRUNCATEDCONE]       = &ShapeShapeContactPatch<Cylinder, TruncatedCone>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_CYLINDER]   = &ShapeShapeContactPatch<Cylinder, Cylinder>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_CONVEX16]   = &ShapeShapeContactPatch<Cylinder, ConvexBase16>;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_CONVEX32]   = &ShapeShapeContactPatch<Cylinder, ConvexBase32>;
@@ -215,6 +233,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_CONVEX16][GEOM_SPHERE]       = &ShapeShapeContactPatch<ConvexBase16, Sphere>;
   contact_patch_matrix[GEOM_CONVEX16][GEOM_CAPSULE]      = &ShapeShapeContactPatch<ConvexBase16, Capsule>;
   contact_patch_matrix[GEOM_CONVEX16][GEOM_CONE]         = &ShapeShapeContactPatch<ConvexBase16, Cone>;
+  contact_patch_matrix[GEOM_CONVEX16][GEOM_TRUNCATEDCONE]         = &ShapeShapeContactPatch<ConvexBase16, TruncatedCone>;
   contact_patch_matrix[GEOM_CONVEX16][GEOM_CYLINDER]     = &ShapeShapeContactPatch<ConvexBase16, Cylinder>;
   contact_patch_matrix[GEOM_CONVEX16][GEOM_CONVEX16]     = &ShapeShapeContactPatch<ConvexBase16, ConvexBase16>;
   contact_patch_matrix[GEOM_CONVEX16][GEOM_CONVEX32]     = &ShapeShapeContactPatch<ConvexBase16, ConvexBase32>;
@@ -227,6 +246,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_CONVEX32][GEOM_SPHERE]       = &ShapeShapeContactPatch<ConvexBase32, Sphere>;
   contact_patch_matrix[GEOM_CONVEX32][GEOM_CAPSULE]      = &ShapeShapeContactPatch<ConvexBase32, Capsule>;
   contact_patch_matrix[GEOM_CONVEX32][GEOM_CONE]         = &ShapeShapeContactPatch<ConvexBase32, Cone>;
+  contact_patch_matrix[GEOM_CONVEX32][GEOM_TRUNCATEDCONE]         = &ShapeShapeContactPatch<ConvexBase32, TruncatedCone>;
   contact_patch_matrix[GEOM_CONVEX32][GEOM_CYLINDER]     = &ShapeShapeContactPatch<ConvexBase32, Cylinder>;
   contact_patch_matrix[GEOM_CONVEX32][GEOM_CONVEX16]     = &ShapeShapeContactPatch<ConvexBase32, ConvexBase16>;
   contact_patch_matrix[GEOM_CONVEX32][GEOM_CONVEX32]     = &ShapeShapeContactPatch<ConvexBase32, ConvexBase32>;
@@ -239,6 +259,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_PLANE][GEOM_SPHERE]        = &ShapeShapeContactPatch<Plane, Sphere>;
   contact_patch_matrix[GEOM_PLANE][GEOM_CAPSULE]       = &ShapeShapeContactPatch<Plane, Capsule>;
   contact_patch_matrix[GEOM_PLANE][GEOM_CONE]          = &ShapeShapeContactPatch<Plane, Cone>;
+  contact_patch_matrix[GEOM_PLANE][GEOM_TRUNCATEDCONE]          = &ShapeShapeContactPatch<Plane, TruncatedCone>;
   contact_patch_matrix[GEOM_PLANE][GEOM_CYLINDER]      = &ShapeShapeContactPatch<Plane, Cylinder>;
   contact_patch_matrix[GEOM_PLANE][GEOM_CONVEX16]      = &ShapeShapeContactPatch<Plane, ConvexBase16>;
   contact_patch_matrix[GEOM_PLANE][GEOM_CONVEX32]      = &ShapeShapeContactPatch<Plane, ConvexBase32>;
@@ -251,6 +272,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_SPHERE]    = &ShapeShapeContactPatch<Halfspace, Sphere>;
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_CAPSULE]   = &ShapeShapeContactPatch<Halfspace, Capsule>;
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_CONE]      = &ShapeShapeContactPatch<Halfspace, Cone>;
+  contact_patch_matrix[GEOM_HALFSPACE][GEOM_TRUNCATEDCONE]      = &ShapeShapeContactPatch<Halfspace, TruncatedCone>;
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_CYLINDER]  = &ShapeShapeContactPatch<Halfspace, Cylinder>;
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_CONVEX16]  = &ShapeShapeContactPatch<Halfspace, ConvexBase16>;
   contact_patch_matrix[GEOM_HALFSPACE][GEOM_CONVEX32]  = &ShapeShapeContactPatch<Halfspace, ConvexBase32>;
@@ -263,6 +285,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_SPHERE]     = &ShapeShapeContactPatch<TriangleP, Sphere>;
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_CAPSULE]    = &ShapeShapeContactPatch<TriangleP, Capsule>;
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_CONE]       = &ShapeShapeContactPatch<TriangleP, Cone>;
+  contact_patch_matrix[GEOM_TRIANGLE][GEOM_TRUNCATEDCONE]       = &ShapeShapeContactPatch<TriangleP, TruncatedCone>;
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_CYLINDER]   = &ShapeShapeContactPatch<TriangleP, Cylinder>;
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_CONVEX16]   = &ShapeShapeContactPatch<TriangleP, ConvexBase16>;
   contact_patch_matrix[GEOM_TRIANGLE][GEOM_CONVEX32]   = &ShapeShapeContactPatch<TriangleP, ConvexBase32>;
@@ -278,6 +301,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_AABB][GEOM_SPHERE]      = &BVHShapeComputeContactPatch<AABB, Sphere>::run;
   contact_patch_matrix[BV_AABB][GEOM_CAPSULE]     = &BVHShapeComputeContactPatch<AABB, Capsule>::run;
   contact_patch_matrix[BV_AABB][GEOM_CONE]        = &BVHShapeComputeContactPatch<AABB, Cone>::run;
+  contact_patch_matrix[BV_AABB][GEOM_TRUNCATEDCONE]        = &BVHShapeComputeContactPatch<AABB, TruncatedCone>::run;
   contact_patch_matrix[BV_AABB][GEOM_CYLINDER]    = &BVHShapeComputeContactPatch<AABB, Cylinder>::run;
   contact_patch_matrix[BV_AABB][GEOM_CONVEX16]    = &BVHShapeComputeContactPatch<AABB, ConvexBase16>::run;
   contact_patch_matrix[BV_AABB][GEOM_CONVEX32]    = &BVHShapeComputeContactPatch<AABB, ConvexBase32>::run;
@@ -289,6 +313,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_OBB][GEOM_SPHERE]       = &BVHShapeComputeContactPatch<OBB, Sphere>::run;
   contact_patch_matrix[BV_OBB][GEOM_CAPSULE]      = &BVHShapeComputeContactPatch<OBB, Capsule>::run;
   contact_patch_matrix[BV_OBB][GEOM_CONE]         = &BVHShapeComputeContactPatch<OBB, Cone>::run;
+  contact_patch_matrix[BV_OBB][GEOM_TRUNCATEDCONE]         = &BVHShapeComputeContactPatch<OBB, TruncatedCone>::run;
   contact_patch_matrix[BV_OBB][GEOM_CYLINDER]     = &BVHShapeComputeContactPatch<OBB, Cylinder>::run;
   contact_patch_matrix[BV_OBB][GEOM_CONVEX16]     = &BVHShapeComputeContactPatch<OBB, ConvexBase16>::run;
   contact_patch_matrix[BV_OBB][GEOM_CONVEX32]     = &BVHShapeComputeContactPatch<OBB, ConvexBase32>::run;
@@ -300,6 +325,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_RSS][GEOM_SPHERE]       = &BVHShapeComputeContactPatch<RSS, Sphere>::run;
   contact_patch_matrix[BV_RSS][GEOM_CAPSULE]      = &BVHShapeComputeContactPatch<RSS, Capsule>::run;
   contact_patch_matrix[BV_RSS][GEOM_CONE]         = &BVHShapeComputeContactPatch<RSS, Cone>::run;
+  contact_patch_matrix[BV_RSS][GEOM_TRUNCATEDCONE]         = &BVHShapeComputeContactPatch<RSS, TruncatedCone>::run;
   contact_patch_matrix[BV_RSS][GEOM_CYLINDER]     = &BVHShapeComputeContactPatch<RSS, Cylinder>::run;
   contact_patch_matrix[BV_RSS][GEOM_CONVEX16]     = &BVHShapeComputeContactPatch<RSS, ConvexBase16>::run;
   contact_patch_matrix[BV_RSS][GEOM_CONVEX32]     = &BVHShapeComputeContactPatch<RSS, ConvexBase32>::run;
@@ -311,6 +337,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_KDOP16][GEOM_SPHERE]    = &BVHShapeComputeContactPatch<KDOP<16>, Sphere>::run;
   contact_patch_matrix[BV_KDOP16][GEOM_CAPSULE]   = &BVHShapeComputeContactPatch<KDOP<16>, Capsule>::run;
   contact_patch_matrix[BV_KDOP16][GEOM_CONE]      = &BVHShapeComputeContactPatch<KDOP<16>, Cone>::run;
+  contact_patch_matrix[BV_KDOP16][GEOM_TRUNCATEDCONE]      = &BVHShapeComputeContactPatch<KDOP<16>, TruncatedCone>::run;
   contact_patch_matrix[BV_KDOP16][GEOM_CYLINDER]  = &BVHShapeComputeContactPatch<KDOP<16>, Cylinder>::run;
   contact_patch_matrix[BV_KDOP16][GEOM_CONVEX16]  = &BVHShapeComputeContactPatch<KDOP<16>, ConvexBase16>::run;
   contact_patch_matrix[BV_KDOP16][GEOM_CONVEX32]  = &BVHShapeComputeContactPatch<KDOP<16>, ConvexBase32>::run;
@@ -322,6 +349,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_KDOP18][GEOM_SPHERE]    = &BVHShapeComputeContactPatch<KDOP<18>, Sphere>::run;
   contact_patch_matrix[BV_KDOP18][GEOM_CAPSULE]   = &BVHShapeComputeContactPatch<KDOP<18>, Capsule>::run;
   contact_patch_matrix[BV_KDOP18][GEOM_CONE]      = &BVHShapeComputeContactPatch<KDOP<18>, Cone>::run;
+  contact_patch_matrix[BV_KDOP18][GEOM_TRUNCATEDCONE]      = &BVHShapeComputeContactPatch<KDOP<18>, TruncatedCone>::run;
   contact_patch_matrix[BV_KDOP18][GEOM_CYLINDER]  = &BVHShapeComputeContactPatch<KDOP<18>, Cylinder>::run;
   contact_patch_matrix[BV_KDOP18][GEOM_CONVEX16]  = &BVHShapeComputeContactPatch<KDOP<18>, ConvexBase16>::run;
   contact_patch_matrix[BV_KDOP18][GEOM_CONVEX32]  = &BVHShapeComputeContactPatch<KDOP<18>, ConvexBase32>::run;
@@ -333,6 +361,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_KDOP24][GEOM_SPHERE]    = &BVHShapeComputeContactPatch<KDOP<24>, Sphere>::run;
   contact_patch_matrix[BV_KDOP24][GEOM_CAPSULE]   = &BVHShapeComputeContactPatch<KDOP<24>, Capsule>::run;
   contact_patch_matrix[BV_KDOP24][GEOM_CONE]      = &BVHShapeComputeContactPatch<KDOP<24>, Cone>::run;
+  contact_patch_matrix[BV_KDOP24][GEOM_TRUNCATEDCONE]      = &BVHShapeComputeContactPatch<KDOP<24>, TruncatedCone>::run;
   contact_patch_matrix[BV_KDOP24][GEOM_CYLINDER]  = &BVHShapeComputeContactPatch<KDOP<24>, Cylinder>::run;
   contact_patch_matrix[BV_KDOP24][GEOM_CONVEX16]  = &BVHShapeComputeContactPatch<KDOP<24>, ConvexBase16>::run;
   contact_patch_matrix[BV_KDOP24][GEOM_CONVEX32]  = &BVHShapeComputeContactPatch<KDOP<24>, ConvexBase32>::run;
@@ -344,6 +373,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_kIOS][GEOM_SPHERE]      = &BVHShapeComputeContactPatch<kIOS, Sphere>::run;
   contact_patch_matrix[BV_kIOS][GEOM_CAPSULE]     = &BVHShapeComputeContactPatch<kIOS, Capsule>::run;
   contact_patch_matrix[BV_kIOS][GEOM_CONE]        = &BVHShapeComputeContactPatch<kIOS, Cone>::run;
+  contact_patch_matrix[BV_kIOS][GEOM_TRUNCATEDCONE]        = &BVHShapeComputeContactPatch<kIOS, TruncatedCone>::run;
   contact_patch_matrix[BV_kIOS][GEOM_CYLINDER]    = &BVHShapeComputeContactPatch<kIOS, Cylinder>::run;
   contact_patch_matrix[BV_kIOS][GEOM_CONVEX16]    = &BVHShapeComputeContactPatch<kIOS, ConvexBase16>::run;
   contact_patch_matrix[BV_kIOS][GEOM_CONVEX32]    = &BVHShapeComputeContactPatch<kIOS, ConvexBase32>::run;
@@ -355,6 +385,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[BV_OBBRSS][GEOM_SPHERE]    = &BVHShapeComputeContactPatch<OBBRSS, Sphere>::run;
   contact_patch_matrix[BV_OBBRSS][GEOM_CAPSULE]   = &BVHShapeComputeContactPatch<OBBRSS, Capsule>::run;
   contact_patch_matrix[BV_OBBRSS][GEOM_CONE]      = &BVHShapeComputeContactPatch<OBBRSS, Cone>::run;
+  contact_patch_matrix[BV_OBBRSS][GEOM_TRUNCATEDCONE]      = &BVHShapeComputeContactPatch<OBBRSS, TruncatedCone>::run;
   contact_patch_matrix[BV_OBBRSS][GEOM_CYLINDER]  = &BVHShapeComputeContactPatch<OBBRSS, Cylinder>::run;
   contact_patch_matrix[BV_OBBRSS][GEOM_CONVEX16]  = &BVHShapeComputeContactPatch<OBBRSS, ConvexBase16>::run;
   contact_patch_matrix[BV_OBBRSS][GEOM_CONVEX32]  = &BVHShapeComputeContactPatch<OBBRSS, ConvexBase32>::run;
@@ -366,6 +397,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[HF_AABB][GEOM_SPHERE]      = &HeightFieldShapeComputeContactPatch<AABB, Sphere>::run;
   contact_patch_matrix[HF_AABB][GEOM_CAPSULE]     = &HeightFieldShapeComputeContactPatch<AABB, Capsule>::run;
   contact_patch_matrix[HF_AABB][GEOM_CONE]        = &HeightFieldShapeComputeContactPatch<AABB, Cone>::run;
+  contact_patch_matrix[HF_AABB][GEOM_TRUNCATEDCONE]        = &HeightFieldShapeComputeContactPatch<AABB, TruncatedCone>::run;
   contact_patch_matrix[HF_AABB][GEOM_CYLINDER]    = &HeightFieldShapeComputeContactPatch<AABB, Cylinder>::run;
   contact_patch_matrix[HF_AABB][GEOM_CONVEX16]    = &HeightFieldShapeComputeContactPatch<AABB, ConvexBase16>::run;
   contact_patch_matrix[HF_AABB][GEOM_CONVEX32]    = &HeightFieldShapeComputeContactPatch<AABB, ConvexBase32>::run;
@@ -377,6 +409,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[HF_OBBRSS][GEOM_SPHERE]    = &HeightFieldShapeComputeContactPatch<OBBRSS, Sphere>::run;
   contact_patch_matrix[HF_OBBRSS][GEOM_CAPSULE]   = &HeightFieldShapeComputeContactPatch<OBBRSS, Capsule>::run;
   contact_patch_matrix[HF_OBBRSS][GEOM_CONE]      = &HeightFieldShapeComputeContactPatch<OBBRSS, Cone>::run;
+  contact_patch_matrix[HF_OBBRSS][GEOM_TRUNCATEDCONE]      = &HeightFieldShapeComputeContactPatch<OBBRSS, TruncatedCone>::run;
   contact_patch_matrix[HF_OBBRSS][GEOM_CYLINDER]  = &HeightFieldShapeComputeContactPatch<OBBRSS, Cylinder>::run;
   contact_patch_matrix[HF_OBBRSS][GEOM_CONVEX16]  = &HeightFieldShapeComputeContactPatch<OBBRSS, ConvexBase16>::run;
   contact_patch_matrix[HF_OBBRSS][GEOM_CONVEX32]  = &HeightFieldShapeComputeContactPatch<OBBRSS, ConvexBase32>::run;
@@ -400,6 +433,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_OCTREE][GEOM_SPHERE] = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_OCTREE][GEOM_CAPSULE] = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_OCTREE][GEOM_CONE] = &contact_patch_function_not_implemented;
+  contact_patch_matrix[GEOM_OCTREE][GEOM_TRUNCATEDCONE] = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_OCTREE][GEOM_CYLINDER] = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_OCTREE][GEOM_CONVEX] = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_OCTREE][GEOM_PLANE] = &contact_patch_function_not_implemented;
@@ -421,6 +455,7 @@ ContactPatchFunctionMatrix::ContactPatchFunctionMatrix() {
   contact_patch_matrix[GEOM_SPHERE][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_CAPSULE][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_CONE][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
+  contact_patch_matrix[GEOM_TRUNCATEDCONE][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_CYLINDER][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_CONVEX][GEOM_OCTREE]  = &contact_patch_function_not_implemented;
   contact_patch_matrix[GEOM_PLANE][GEOM_OCTREE]  = &contact_patch_function_not_implemented;

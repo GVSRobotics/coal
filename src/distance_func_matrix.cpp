@@ -282,6 +282,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_BOX][GEOM_SPHERE]          = &ShapeShapeDistance<Box, Sphere>;
   distance_matrix[GEOM_BOX][GEOM_CAPSULE]         = &ShapeShapeDistance<Box, Capsule>;
   distance_matrix[GEOM_BOX][GEOM_CONE]            = &ShapeShapeDistance<Box, Cone>;
+  distance_matrix[GEOM_BOX][GEOM_TRUNCATEDCONE]            = &ShapeShapeDistance<Box, TruncatedCone>;
   distance_matrix[GEOM_BOX][GEOM_CYLINDER]        = &ShapeShapeDistance<Box, Cylinder>;
   distance_matrix[GEOM_BOX][GEOM_CONVEX16]        = &ShapeShapeDistance<Box, ConvexBase16>;
   distance_matrix[GEOM_BOX][GEOM_CONVEX32]        = &ShapeShapeDistance<Box, ConvexBase32>;
@@ -293,6 +294,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_SPHERE][GEOM_SPHERE]       = &ShapeShapeDistance<Sphere, Sphere>;
   distance_matrix[GEOM_SPHERE][GEOM_CAPSULE]      = &ShapeShapeDistance<Sphere, Capsule>;
   distance_matrix[GEOM_SPHERE][GEOM_CONE]         = &ShapeShapeDistance<Sphere, Cone>;
+  distance_matrix[GEOM_SPHERE][GEOM_TRUNCATEDCONE]         = &ShapeShapeDistance<Sphere, TruncatedCone>;
   distance_matrix[GEOM_SPHERE][GEOM_CYLINDER]     = &ShapeShapeDistance<Sphere, Cylinder>;
   distance_matrix[GEOM_SPHERE][GEOM_CONVEX16]     = &ShapeShapeDistance<Sphere, ConvexBase16>;
   distance_matrix[GEOM_SPHERE][GEOM_CONVEX32]     = &ShapeShapeDistance<Sphere, ConvexBase32>;
@@ -304,6 +306,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_ELLIPSOID][GEOM_SPHERE]    = &ShapeShapeDistance<Ellipsoid, Sphere>;
   distance_matrix[GEOM_ELLIPSOID][GEOM_CAPSULE]   = &ShapeShapeDistance<Ellipsoid, Capsule>;
   distance_matrix[GEOM_ELLIPSOID][GEOM_CONE]      = &ShapeShapeDistance<Ellipsoid, Cone>;
+  distance_matrix[GEOM_ELLIPSOID][GEOM_TRUNCATEDCONE]      = &ShapeShapeDistance<Ellipsoid, TruncatedCone>;
   distance_matrix[GEOM_ELLIPSOID][GEOM_CYLINDER]  = &ShapeShapeDistance<Ellipsoid, Cylinder>;
   distance_matrix[GEOM_ELLIPSOID][GEOM_CONVEX16]  = &ShapeShapeDistance<Ellipsoid, ConvexBase16>;
   distance_matrix[GEOM_ELLIPSOID][GEOM_CONVEX32]  = &ShapeShapeDistance<Ellipsoid, ConvexBase32>;
@@ -315,6 +318,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_CAPSULE][GEOM_SPHERE]      = &ShapeShapeDistance<Capsule, Sphere>;
   distance_matrix[GEOM_CAPSULE][GEOM_CAPSULE]     = &ShapeShapeDistance<Capsule, Capsule>;
   distance_matrix[GEOM_CAPSULE][GEOM_CONE]        = &ShapeShapeDistance<Capsule, Cone>;
+  distance_matrix[GEOM_CAPSULE][GEOM_TRUNCATEDCONE]        = &ShapeShapeDistance<Capsule, TruncatedCone>;
   distance_matrix[GEOM_CAPSULE][GEOM_CYLINDER]    = &ShapeShapeDistance<Capsule, Cylinder>;
   distance_matrix[GEOM_CAPSULE][GEOM_CONVEX16]    = &ShapeShapeDistance<Capsule, ConvexBase16>;
   distance_matrix[GEOM_CAPSULE][GEOM_CONVEX32]    = &ShapeShapeDistance<Capsule, ConvexBase32>;
@@ -323,20 +327,33 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_CAPSULE][GEOM_ELLIPSOID]   = &ShapeShapeDistance<Capsule, Ellipsoid>;
 
   distance_matrix[GEOM_CONE][GEOM_BOX]            = &ShapeShapeDistance<Cone, Box>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_BOX]            = &ShapeShapeDistance<TruncatedCone, Box>;
   distance_matrix[GEOM_CONE][GEOM_SPHERE]         = &ShapeShapeDistance<Cone, Sphere>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_SPHERE]         = &ShapeShapeDistance<TruncatedCone, Sphere>;
   distance_matrix[GEOM_CONE][GEOM_CAPSULE]        = &ShapeShapeDistance<Cone, Capsule>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_CAPSULE]        = &ShapeShapeDistance<TruncatedCone, Capsule>;
   distance_matrix[GEOM_CONE][GEOM_CONE]           = &ShapeShapeDistance<Cone, Cone>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_TRUNCATEDCONE]           = &ShapeShapeDistance<TruncatedCone, TruncatedCone>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_CONE]                     = &ShapeShapeDistance<TruncatedCone, Cone>;
+  distance_matrix[GEOM_CONE][GEOM_TRUNCATEDCONE]                     = &ShapeShapeDistance<Cone, TruncatedCone>;
   distance_matrix[GEOM_CONE][GEOM_CYLINDER]       = &ShapeShapeDistance<Cone, Cylinder>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_CYLINDER]       = &ShapeShapeDistance<TruncatedCone, Cylinder>;
   distance_matrix[GEOM_CONE][GEOM_CONVEX16]       = &ShapeShapeDistance<Cone, ConvexBase16>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_CONVEX16]       = &ShapeShapeDistance<TruncatedCone, ConvexBase16>;
   distance_matrix[GEOM_CONE][GEOM_CONVEX32]       = &ShapeShapeDistance<Cone, ConvexBase32>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_CONVEX32]       = &ShapeShapeDistance<TruncatedCone, ConvexBase32>;
   distance_matrix[GEOM_CONE][GEOM_PLANE]          = &ShapeShapeDistance<Cone, Plane>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_PLANE]          = &ShapeShapeDistance<TruncatedCone, Plane>;
   distance_matrix[GEOM_CONE][GEOM_HALFSPACE]      = &ShapeShapeDistance<Cone, Halfspace>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_HALFSPACE]      = &ShapeShapeDistance<TruncatedCone, Halfspace>;
   distance_matrix[GEOM_CONE][GEOM_ELLIPSOID]      = &ShapeShapeDistance<Cone, Ellipsoid>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_ELLIPSOID]      = &ShapeShapeDistance<TruncatedCone, Ellipsoid>;
 
   distance_matrix[GEOM_CYLINDER][GEOM_BOX]        = &ShapeShapeDistance<Cylinder, Box>;
   distance_matrix[GEOM_CYLINDER][GEOM_SPHERE]     = &ShapeShapeDistance<Cylinder, Sphere>;
   distance_matrix[GEOM_CYLINDER][GEOM_CAPSULE]    = &ShapeShapeDistance<Cylinder, Capsule>;
   distance_matrix[GEOM_CYLINDER][GEOM_CONE]       = &ShapeShapeDistance<Cylinder, Cone>;
+  distance_matrix[GEOM_CYLINDER][GEOM_TRUNCATEDCONE]       = &ShapeShapeDistance<Cylinder, TruncatedCone>;
   distance_matrix[GEOM_CYLINDER][GEOM_CYLINDER]   = &ShapeShapeDistance<Cylinder, Cylinder>;
   distance_matrix[GEOM_CYLINDER][GEOM_CONVEX16]   = &ShapeShapeDistance<Cylinder, ConvexBase16>;
   distance_matrix[GEOM_CYLINDER][GEOM_CONVEX32]   = &ShapeShapeDistance<Cylinder, ConvexBase32>;
@@ -348,6 +365,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_CONVEX16][GEOM_SPHERE]       = &ShapeShapeDistance<ConvexBase16, Sphere>;
   distance_matrix[GEOM_CONVEX16][GEOM_CAPSULE]      = &ShapeShapeDistance<ConvexBase16, Capsule>;
   distance_matrix[GEOM_CONVEX16][GEOM_CONE]         = &ShapeShapeDistance<ConvexBase16, Cone>;
+  distance_matrix[GEOM_CONVEX16][GEOM_TRUNCATEDCONE]         = &ShapeShapeDistance<ConvexBase16, TruncatedCone>;
   distance_matrix[GEOM_CONVEX16][GEOM_CYLINDER]     = &ShapeShapeDistance<ConvexBase16, Cylinder>;
   distance_matrix[GEOM_CONVEX16][GEOM_CONVEX16]     = &ShapeShapeDistance<ConvexBase16, ConvexBase16>;
   distance_matrix[GEOM_CONVEX16][GEOM_CONVEX32]     = &ShapeShapeDistance<ConvexBase16, ConvexBase32>;
@@ -359,6 +377,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_CONVEX32][GEOM_SPHERE]       = &ShapeShapeDistance<ConvexBase32, Sphere>;
   distance_matrix[GEOM_CONVEX32][GEOM_CAPSULE]      = &ShapeShapeDistance<ConvexBase32, Capsule>;
   distance_matrix[GEOM_CONVEX32][GEOM_CONE]         = &ShapeShapeDistance<ConvexBase32, Cone>;
+  distance_matrix[GEOM_CONVEX32][GEOM_TRUNCATEDCONE]         = &ShapeShapeDistance<ConvexBase32, TruncatedCone>;
   distance_matrix[GEOM_CONVEX32][GEOM_CYLINDER]     = &ShapeShapeDistance<ConvexBase32, Cylinder>;
   distance_matrix[GEOM_CONVEX32][GEOM_CONVEX16]     = &ShapeShapeDistance<ConvexBase32, ConvexBase16>;
   distance_matrix[GEOM_CONVEX32][GEOM_CONVEX32]     = &ShapeShapeDistance<ConvexBase32, ConvexBase32>;
@@ -370,6 +389,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_PLANE][GEOM_SPHERE]        = &ShapeShapeDistance<Plane, Sphere>;
   distance_matrix[GEOM_PLANE][GEOM_CAPSULE]       = &ShapeShapeDistance<Plane, Capsule>;
   distance_matrix[GEOM_PLANE][GEOM_CONE]          = &ShapeShapeDistance<Plane, Cone>;
+  distance_matrix[GEOM_PLANE][GEOM_TRUNCATEDCONE]          = &ShapeShapeDistance<Plane, TruncatedCone>;
   distance_matrix[GEOM_PLANE][GEOM_CYLINDER]      = &ShapeShapeDistance<Plane, Cylinder>;
   distance_matrix[GEOM_PLANE][GEOM_CONVEX16]      = &ShapeShapeDistance<Plane, ConvexBase16>;
   distance_matrix[GEOM_PLANE][GEOM_CONVEX32]      = &ShapeShapeDistance<Plane, ConvexBase32>;
@@ -381,6 +401,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_HALFSPACE][GEOM_SPHERE]    = &ShapeShapeDistance<Halfspace, Sphere>;
   distance_matrix[GEOM_HALFSPACE][GEOM_CAPSULE]   = &ShapeShapeDistance<Halfspace, Capsule>;
   distance_matrix[GEOM_HALFSPACE][GEOM_CONE]      = &ShapeShapeDistance<Halfspace, Cone>;
+  distance_matrix[GEOM_HALFSPACE][GEOM_TRUNCATEDCONE]      = &ShapeShapeDistance<Halfspace, TruncatedCone>;
   distance_matrix[GEOM_HALFSPACE][GEOM_CYLINDER]  = &ShapeShapeDistance<Halfspace, Cylinder>;
   distance_matrix[GEOM_HALFSPACE][GEOM_CONVEX16]  = &ShapeShapeDistance<Halfspace, ConvexBase16>;
   distance_matrix[GEOM_HALFSPACE][GEOM_CONVEX32]  = &ShapeShapeDistance<Halfspace, ConvexBase32>;
@@ -396,6 +417,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   Sphere>::distance; distance_matrix[BV_AABB][GEOM_CAPSULE] =
   &BVHShapeDistancer<AABB, Capsule>::distance;
   distance_matrix[BV_AABB][GEOM_CONE] = &BVHShapeDistancer<AABB,
+  distance_matrix[BV_AABB][GEOM_TRUNCATEDCONE] = &BVHShapeDistancer<AABB,
   Cone>::distance; distance_matrix[BV_AABB][GEOM_CYLINDER] =
   &BVHShapeDistancer<AABB, Cylinder>::distance;
   distance_matrix[BV_AABB][GEOM_CONVEX] = &BVHShapeDistancer<AABB,
@@ -410,6 +432,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[BV_OBB][GEOM_SPHERE]           = &BVHShapeDistancer<OBB, Sphere>::distance;
   distance_matrix[BV_OBB][GEOM_CAPSULE]          = &BVHShapeDistancer<OBB, Capsule>::distance;
   distance_matrix[BV_OBB][GEOM_CONE]             = &BVHShapeDistancer<OBB, Cone>::distance;
+  distance_matrix[BV_OBB][GEOM_TRUNCATEDCONE]             = &BVHShapeDistancer<OBB, TruncatedCone>::distance;
   distance_matrix[BV_OBB][GEOM_CYLINDER]         = &BVHShapeDistancer<OBB, Cylinder>::distance;
   distance_matrix[BV_OBB][GEOM_CONVEX16]         = &BVHShapeDistancer<OBB, ConvexBase16>::distance;
   distance_matrix[BV_OBB][GEOM_CONVEX32]         = &BVHShapeDistancer<OBB, ConvexBase32>::distance;
@@ -421,6 +444,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[BV_RSS][GEOM_SPHERE]           = &BVHShapeDistancer<RSS, Sphere>::distance;
   distance_matrix[BV_RSS][GEOM_CAPSULE]          = &BVHShapeDistancer<RSS, Capsule>::distance;
   distance_matrix[BV_RSS][GEOM_CONE]             = &BVHShapeDistancer<RSS, Cone>::distance;
+  distance_matrix[BV_RSS][GEOM_TRUNCATEDCONE]             = &BVHShapeDistancer<RSS, TruncatedCone>::distance;
   distance_matrix[BV_RSS][GEOM_CYLINDER]         = &BVHShapeDistancer<RSS, Cylinder>::distance;
   distance_matrix[BV_RSS][GEOM_CONVEX16]         = &BVHShapeDistancer<RSS, ConvexBase16>::distance;
   distance_matrix[BV_RSS][GEOM_CONVEX32]         = &BVHShapeDistancer<RSS, ConvexBase32>::distance;
@@ -436,6 +460,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   &BVHShapeDistancer<KDOP<16>, Sphere>::distance;
   distance_matrix[BV_KDOP16][GEOM_CAPSULE] = &BVHShapeDistancer<KDOP<16>,
   Capsule>::distance; distance_matrix[BV_KDOP16][GEOM_CONE] =
+  Capsule>::distance; distance_matrix[BV_KDOP16][GEOM_TRUNCATEDCONE] =
   &BVHShapeDistancer<KDOP<16>, Cone>::distance;
   distance_matrix[BV_KDOP16][GEOM_CYLINDER] = &BVHShapeDistancer<KDOP<16>,
   Cylinder>::distance; distance_matrix[BV_KDOP16][GEOM_CONVEX] =
@@ -449,6 +474,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   &BVHShapeDistancer<KDOP<18>, Sphere>::distance;
   distance_matrix[BV_KDOP18][GEOM_CAPSULE] = &BVHShapeDistancer<KDOP<18>,
   Capsule>::distance; distance_matrix[BV_KDOP18][GEOM_CONE] =
+  Capsule>::distance; distance_matrix[BV_KDOP18][GEOM_TRUNCATEDCONE] =
   &BVHShapeDistancer<KDOP<18>, Cone>::distance;
   distance_matrix[BV_KDOP18][GEOM_CYLINDER] = &BVHShapeDistancer<KDOP<18>,
   Cylinder>::distance; distance_matrix[BV_KDOP18][GEOM_CONVEX] =
@@ -462,6 +488,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   &BVHShapeDistancer<KDOP<24>, Sphere>::distance;
   distance_matrix[BV_KDOP24][GEOM_CAPSULE] = &BVHShapeDistancer<KDOP<24>,
   Capsule>::distance; distance_matrix[BV_KDOP24][GEOM_CONE] =
+  Capsule>::distance; distance_matrix[BV_KDOP24][GEOM_TRUNCATEDCONE] =
   &BVHShapeDistancer<KDOP<24>, Cone>::distance;
   distance_matrix[BV_KDOP24][GEOM_CYLINDER] = &BVHShapeDistancer<KDOP<24>,
   Cylinder>::distance; distance_matrix[BV_KDOP24][GEOM_CONVEX] =
@@ -476,6 +503,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[BV_kIOS][GEOM_SPHERE]                     = &BVHShapeDistancer<kIOS, Sphere>::distance;
   distance_matrix[BV_kIOS][GEOM_CAPSULE]                    = &BVHShapeDistancer<kIOS, Capsule>::distance;
   distance_matrix[BV_kIOS][GEOM_CONE]                       = &BVHShapeDistancer<kIOS, Cone>::distance;
+  distance_matrix[BV_kIOS][GEOM_TRUNCATEDCONE]                       = &BVHShapeDistancer<kIOS, TruncatedCone>::distance;
   distance_matrix[BV_kIOS][GEOM_CYLINDER]                   = &BVHShapeDistancer<kIOS, Cylinder>::distance;
   distance_matrix[BV_kIOS][GEOM_CONVEX16]                   = &BVHShapeDistancer<kIOS, ConvexBase16>::distance;
   distance_matrix[BV_kIOS][GEOM_CONVEX32]                   = &BVHShapeDistancer<kIOS, ConvexBase32>::distance;
@@ -487,6 +515,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[BV_OBBRSS][GEOM_SPHERE]                   = &BVHShapeDistancer<OBBRSS, Sphere>::distance;
   distance_matrix[BV_OBBRSS][GEOM_CAPSULE]                  = &BVHShapeDistancer<OBBRSS, Capsule>::distance;
   distance_matrix[BV_OBBRSS][GEOM_CONE]                     = &BVHShapeDistancer<OBBRSS, Cone>::distance;
+  distance_matrix[BV_OBBRSS][GEOM_TRUNCATEDCONE]                     = &BVHShapeDistancer<OBBRSS, TruncatedCone>::distance;
   distance_matrix[BV_OBBRSS][GEOM_CYLINDER]                 = &BVHShapeDistancer<OBBRSS, Cylinder>::distance;
   distance_matrix[BV_OBBRSS][GEOM_CONVEX16]                 = &BVHShapeDistancer<OBBRSS, ConvexBase16>::distance;
   distance_matrix[BV_OBBRSS][GEOM_CONVEX32]                 = &BVHShapeDistancer<OBBRSS, ConvexBase32>::distance;
@@ -498,6 +527,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[HF_AABB][GEOM_SPHERE]                     = &HeightFieldShapeDistancer<AABB, Sphere>::distance;
   distance_matrix[HF_AABB][GEOM_CAPSULE]                    = &HeightFieldShapeDistancer<AABB, Capsule>::distance;
   distance_matrix[HF_AABB][GEOM_CONE]                       = &HeightFieldShapeDistancer<AABB, Cone>::distance;
+  distance_matrix[HF_AABB][GEOM_TRUNCATEDCONE]                       = &HeightFieldShapeDistancer<AABB, TruncatedCone>::distance;
   distance_matrix[HF_AABB][GEOM_CYLINDER]                   = &HeightFieldShapeDistancer<AABB, Cylinder>::distance;
   distance_matrix[HF_AABB][GEOM_CONVEX16]                   = &HeightFieldShapeDistancer<AABB, ConvexBase16>::distance;
   distance_matrix[HF_AABB][GEOM_CONVEX32]                   = &HeightFieldShapeDistancer<AABB, ConvexBase32>::distance;
@@ -509,6 +539,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[HF_OBBRSS][GEOM_SPHERE]                   = &HeightFieldShapeDistancer<OBBRSS, Sphere>::distance;
   distance_matrix[HF_OBBRSS][GEOM_CAPSULE]                  = &HeightFieldShapeDistancer<OBBRSS, Capsule>::distance;
   distance_matrix[HF_OBBRSS][GEOM_CONE]                     = &HeightFieldShapeDistancer<OBBRSS, Cone>::distance;
+  distance_matrix[HF_OBBRSS][GEOM_TRUNCATEDCONE]                     = &HeightFieldShapeDistancer<OBBRSS, TruncatedCone>::distance;
   distance_matrix[HF_OBBRSS][GEOM_CYLINDER]                 = &HeightFieldShapeDistancer<OBBRSS, Cylinder>::distance;
   distance_matrix[HF_OBBRSS][GEOM_CONVEX16]                 = &HeightFieldShapeDistancer<OBBRSS, ConvexBase16>::distance;
   distance_matrix[HF_OBBRSS][GEOM_CONVEX32]                 = &HeightFieldShapeDistancer<OBBRSS, ConvexBase32>::distance;
@@ -527,6 +558,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_OCTREE][GEOM_SPHERE]                 = &Distance<OcTree, Sphere>;
   distance_matrix[GEOM_OCTREE][GEOM_CAPSULE]                = &Distance<OcTree, Capsule>;
   distance_matrix[GEOM_OCTREE][GEOM_CONE]                   = &Distance<OcTree, Cone>;
+  distance_matrix[GEOM_OCTREE][GEOM_TRUNCATEDCONE]                   = &Distance<OcTree, TruncatedCone>;
   distance_matrix[GEOM_OCTREE][GEOM_CYLINDER]               = &Distance<OcTree, Cylinder>;
   distance_matrix[GEOM_OCTREE][GEOM_CONVEX16]               = &Distance<OcTree, ConvexBase16>;
   distance_matrix[GEOM_OCTREE][GEOM_CONVEX32]               = &Distance<OcTree, ConvexBase32>;
@@ -538,6 +570,7 @@ DistanceFunctionMatrix::DistanceFunctionMatrix() {
   distance_matrix[GEOM_SPHERE][GEOM_OCTREE]                 = &Distance<Sphere, OcTree>;
   distance_matrix[GEOM_CAPSULE][GEOM_OCTREE]                = &Distance<Capsule, OcTree>;
   distance_matrix[GEOM_CONE][GEOM_OCTREE]                   = &Distance<Cone, OcTree>;
+  distance_matrix[GEOM_TRUNCATEDCONE][GEOM_OCTREE]                   = &Distance<TruncatedCone, OcTree>;
   distance_matrix[GEOM_CYLINDER][GEOM_OCTREE]               = &Distance<Cylinder, OcTree>;
   distance_matrix[GEOM_CONVEX16][GEOM_OCTREE]               = &Distance<ConvexBase16, OcTree>;
   distance_matrix[GEOM_CONVEX32][GEOM_OCTREE]               = &Distance<ConvexBase32, OcTree>;

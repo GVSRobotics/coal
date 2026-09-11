@@ -206,6 +206,9 @@ Cone makeRandomCone(std::array<Scalar, 2> min_size,
 Cylinder makeRandomCylinder(std::array<Scalar, 2> min_size,
                             std::array<Scalar, 2> max_size);
 
+TruncatedCone makeRandomTruncatedCone(std::array<Scalar, 3> min_size,
+                                      std::array<Scalar, 3> max_size);
+
 ConvexTpl<Triangle32> makeRandomConvex(Scalar min_size, Scalar max_size);
 
 Plane makeRandomPlane(Scalar min_size, Scalar max_size);

@@ -233,6 +233,13 @@ BOOST_AUTO_TEST_CASE(cone_to_bvh) {
   generateBVHModel(bvh, shape, Transform3s(), 50);
 }
 
+BOOST_AUTO_TEST_CASE(truncated_cone_to_bvh) {
+  TruncatedCone shape(1, Scalar(0.5), 1);
+  BVHModel<OBB> bvh;
+  generateBVHModel(bvh, shape, Transform3s(), 10, 10);
+  generateBVHModel(bvh, shape, Transform3s(), 50);
+}
+
 BOOST_AUTO_TEST_CASE(collide_spheresphere) {
   Sphere s1(20);
   Sphere s2(10);

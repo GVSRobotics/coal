@@ -131,6 +131,11 @@ MinkowskiDiff::GetSupportFunction makeGetSupportFunction1(
         return getSupportFuncTpl<Shape0, Cylinder, true, _SupportOptions>;
       else
         return getSupportFuncTpl<Shape0, Cylinder, false, _SupportOptions>;
+    case GEOM_TRUNCATEDCONE:
+      if (identity)
+        return getSupportFuncTpl<Shape0, TruncatedCone, true, _SupportOptions>;
+      else
+        return getSupportFuncTpl<Shape0, TruncatedCone, false, _SupportOptions>;
     case GEOM_CONVEX16: {
       const ConvexBase16* convex1 = static_cast<const ConvexBase16*>(s1);
       if (static_cast<size_t>(convex1->num_points) >
@@ -229,6 +234,10 @@ MinkowskiDiff::GetSupportFunction makeGetSupportFunction0(
       return makeGetSupportFunction1<Cylinder, _SupportOptions>(
           s1, identity, swept_sphere_radius, data);
       break;
+    case GEOM_TRUNCATEDCONE:
+      return makeGetSupportFunction1<TruncatedCone, _SupportOptions>(
+          s1, identity, swept_sphere_radius, data);
+      break;
     case GEOM_CONVEX16: {
       const ConvexBase16* convex0 = static_cast<const ConvexBase16*>(s0);
       if (static_cast<size_t>(convex0->num_points) >
@@ -283,6 +292,9 @@ bool getNormalizeSupportDirection(const ShapeBase* shape) {
       break;
     case GEOM_CYLINDER:
       return (bool)shape_traits<Cylinder>::NeedNesterovNormalizeHeuristic;
+      break;
+    case GEOM_TRUNCATEDCONE:
+      return (bool)shape_traits<TruncatedCone>::NeedNesterovNormalizeHeuristic;
       break;
     case GEOM_CONVEX16:
       return (bool)shape_traits<ConvexBase16>::NeedNesterovNormalizeHeuristic;

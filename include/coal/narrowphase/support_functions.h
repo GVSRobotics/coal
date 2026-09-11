@@ -100,6 +100,12 @@ template <int _SupportOptions = SupportOptions::NoSweptSphere>
 void getShapeSupport(const Cylinder* cylinder, const Vec3s& dir, Vec3s& support,
                      int& /*unused*/, ShapeSupportData& /*unused*/);
 
+/// @brief TruncatedCone support function.
+template <int _SupportOptions = SupportOptions::NoSweptSphere>
+void getShapeSupport(const TruncatedCone* tcone, const Vec3s& dir,
+                     Vec3s& support, int& /*unused*/,
+                     ShapeSupportData& /*unused*/);
+
 /// @brief ConvexBase support function.
 /// @note See @ref LargeConvex and SmallConvex to see how to optimize
 /// ConvexBase's support computation.
@@ -248,6 +254,14 @@ void getShapeSupportSet(const Cone* cone, SupportSet& support_set,
 /// Assumes the support set frame has already been computed.
 template <int _SupportOptions = SupportOptions::NoSweptSphere>
 void getShapeSupportSet(const Cylinder* cylinder, SupportSet& support_set,
+                        int& /*unused*/, ShapeSupportData& /*unused*/,
+                        size_t num_sampled_supports = 6,
+                        Scalar tol = Scalar(1e-3));
+
+/// @brief TruncatedCone support set function.
+/// Assumes the support set frame has already been computed.
+template <int _SupportOptions = SupportOptions::NoSweptSphere>
+void getShapeSupportSet(const TruncatedCone* tcone, SupportSet& support_set,
                         int& /*unused*/, ShapeSupportData& /*unused*/,
                         size_t num_sampled_supports = 6,
                         Scalar tol = Scalar(1e-3));

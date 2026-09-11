@@ -667,6 +667,137 @@ class COAL_DLLAPI Cylinder : public ShapeBase {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
+/// @brief Truncated cone (conical frustum) along the Z axis.
+/// The base of the truncated cone, of radius \f$ radiusBottom \f$, is at
+/// \f$ z = - halfLength \f$ and the top, of radius \f$ radiusTop \f$, is at
+/// \f$ z = halfLength \f$.
+class COAL_DLLAPI TruncatedCone : public ShapeBase {
+ public:
+  /// @brief Default constructor
+  TruncatedCone() {}
+
+  TruncatedCone(Scalar radiusBottom_, Scalar radiusTop_, Scalar lz_)
+      : ShapeBase(), radiusBottom(radiusBottom_), radiusTop(radiusTop_) {
+    halfLength = lz_ / 2;
+  }
+
+  TruncatedCone(const TruncatedCone& other)
+      : ShapeBase(other),
+        radiusBottom(other.radiusBottom),
+        radiusTop(other.radiusTop),
+        halfLength(other.halfLength) {}
+
+  TruncatedCone& operator=(const TruncatedCone& other) {
+    if (this == &other) return *this;
+
+    this->radiusBottom = other.radiusBottom;
+    this->radiusTop = other.radiusTop;
+    this->halfLength = other.halfLength;
+    return *this;
+  }
+
+  /// @brief Clone *this into a new TruncatedCone
+  virtual TruncatedCone* clone() const override {
+    return new TruncatedCone(*this);
+  };
+
+  /// @brief Radius of the base of the truncated cone, at z = -halfLength
+  Scalar radiusBottom;
+
+  /// @brief Radius of the top of the truncated cone, at z = halfLength
+  Scalar radiusTop;
+
+  /// @brief Half Length along z axis
+  Scalar halfLength;
+
+  /// @brief Compute AABB
+  void computeLocalAABB() override;
+
+  /// @brief Get node type: a truncated cone
+  NODE_TYPE getNodeType() const override { return GEOM_TRUNCATEDCONE; }
+
+  Scalar computeVolume() const override {
+    const Scalar S2 = radiusBottom * radiusBottom +
+                      radiusBottom * radiusTop + radiusTop * radiusTop;
+    return boost::math::constants::pi<Scalar>() * (halfLength * 2) * S2 / 3;
+  }
+
+  Matrix3s computeMomentofInertia() const override {
+    const Scalar a = radiusBottom;
+    const Scalar b = radiusTop;
+    const Scalar h = halfLength;
+    const Scalar S2 = a * a + a * b + b * b;
+    const Scalar S4 =
+        a * a * a * a + a * a * a * b + a * a * b * b + a * b * b * b +
+        b * b * b * b;
+    const Scalar T = 2 * a * a + a * b + 2 * b * b;
+
+    const Scalar V = computeVolume();
+    const Scalar iz = Scalar(0.3) * V * S4 / S2;
+    const Scalar ix =
+        V * (Scalar(3) * S4 / (20 * S2) + h * h * T / (5 * S2));
+
+    return (Matrix3s() << ix, 0, 0, 0, ix, 0, 0, 0, iz).finished();
+  }
+
+  Vec3s computeCOM() const override {
+    const Scalar a = radiusBottom;
+    const Scalar b = radiusTop;
+    const Scalar S2 = a * a + a * b + b * b;
+    return Vec3s(0, 0, halfLength * (b * b - a * a) / (2 * S2));
+  }
+
+  Scalar minInflationValue() const {
+    return -(std::min)((std::min)(radiusBottom, radiusTop), halfLength);
+  }
+
+  /// \brief Inflate the truncated cone by an amount given by `value`.
+  /// This value can be positive or negative but must always >=
+  /// `minInflationValue()`.
+  ///
+  /// \param[in] value of the shape inflation.
+  ///
+  /// \returns a new inflated truncated cone and the related transform to
+  /// account for the change of shape frame
+  std::pair<TruncatedCone, Transform3s> inflated(const Scalar value) const {
+    if (value <= minInflationValue())
+      COAL_THROW_PRETTY("value (" << value
+                                  << ") is two small. It should be at least: "
+                                  << minInflationValue(),
+                        std::invalid_argument);
+
+    // The lateral surface is a single straight line (in the (r, z)
+    // half-plane) from (radiusBottom, -halfLength) to (radiusTop,
+    // halfLength). Offsetting it outward by `value` (in its own normal
+    // direction) shifts the radius, at any fixed z, by value * sqrt(1 + m^2),
+    // where m = d(radius)/dz is the slope of that line.
+    const Scalar m = (radiusTop - radiusBottom) / (2 * halfLength);
+    const Scalar k = std::sqrt(1 + m * m);
+
+    return std::make_pair(
+        TruncatedCone(radiusBottom + value * (k - m),
+                     radiusTop + value * (k + m), 2 * (halfLength + value)),
+        Transform3s());
+  }
+
+ private:
+  virtual bool isEqual(const CollisionGeometry& _other) const override {
+    const TruncatedCone* other_ptr = dynamic_cast<const TruncatedCone*>(&_other);
+    if (other_ptr == nullptr) return false;
+    const TruncatedCone& other = *other_ptr;
+
+    COAL_EQUAL_OPERATOR_CHECK(ShapeBase::isEqual(other));
+    COAL_EQUAL_OPERATOR_CHECK(radiusBottom == other.radiusBottom);
+    COAL_EQUAL_OPERATOR_CHECK(radiusTop == other.radiusTop);
+    COAL_EQUAL_OPERATOR_CHECK(halfLength == other.halfLength);
+
+    return true;
+  }
+
+ public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
 template <typename _IndexType>
 struct ConvexBaseTplNeighbors {
   typedef _IndexType IndexType;

@@ -260,6 +260,110 @@ void generateBVHModel(BVHModel<BV>& model, const Cylinder& shape,
   generateBVHModel(model, shape, pose, tot, h_num);
 }
 
+/// @brief Generate BVH model from truncated cone, given the number of
+/// segments along circle and the number of segments along axis.
+template <typename BV>
+void generateBVHModel(BVHModel<BV>& model, const TruncatedCone& shape,
+                      const Transform3s& pose, unsigned int tot,
+                      unsigned int h_num) {
+  std::vector<Vec3s> points;
+  std::vector<Triangle32> tri_indices;
+
+  Scalar rb = shape.radiusBottom;
+  Scalar rt = shape.radiusTop;
+  Scalar h = shape.halfLength;
+  Scalar phi, phid;
+  const Scalar pi = boost::math::constants::pi<Scalar>();
+  phid = pi * 2 / Scalar(tot);
+  phi = 0;
+
+  Scalar hd = 2 * h / Scalar(h_num);
+
+  // Top ring (z = h, radius = radiusTop)
+  for (unsigned int i = 0; i < tot; ++i)
+    points.push_back(Vec3s(rt * cos(phi + phid * Scalar(i)),
+                           rt * sin(phi + phid * Scalar(i)), h));
+
+  // Intermediate rings, radius linearly interpolated between radiusTop and
+  // radiusBottom
+  for (unsigned int i = 0; i < h_num - 1; ++i) {
+    Scalar ratio = Scalar(i + 1) / Scalar(h_num);
+    Scalar r_ring = rt + (rb - rt) * ratio;
+    for (unsigned int j = 0; j < tot; ++j) {
+      points.push_back(Vec3s(r_ring * cos(phi + phid * Scalar(j)),
+                             r_ring * sin(phi + phid * Scalar(j)),
+                             h - Scalar(i + 1) * hd));
+    }
+  }
+
+  // Bottom ring (z = -h, radius = radiusBottom)
+  for (unsigned int i = 0; i < tot; ++i)
+    points.push_back(Vec3s(rb * cos(phi + phid * Scalar(i)),
+                           rb * sin(phi + phid * Scalar(i)), -h));
+
+  points.push_back(Vec3s(0, 0, h));
+  points.push_back(Vec3s(0, 0, -h));
+
+  // Top cap fan
+  for (unsigned int i = 0; i < tot; ++i) {
+    Triangle32 tmp((h_num + 1) * tot, i, ((i == tot - 1) ? 0 : (i + 1)));
+    tri_indices.push_back(tmp);
+  }
+
+  // Bottom cap fan
+  for (unsigned int i = 0; i < tot; ++i) {
+    Triangle32 tmp((h_num + 1) * tot + 1,
+                   h_num * tot + ((i == tot - 1) ? 0 : (i + 1)),
+                   h_num * tot + i);
+    tri_indices.push_back(tmp);
+  }
+
+  // Lateral surface strips between successive rings
+  for (unsigned int i = 0; i < h_num; ++i) {
+    for (unsigned int j = 0; j < tot; ++j) {
+      unsigned int a, b, c, d;
+      a = j;
+      b = (j == tot - 1) ? 0 : (j + 1);
+      c = j + tot;
+      d = (j == tot - 1) ? tot : (j + 1 + tot);
+
+      unsigned int start = i * tot;
+      tri_indices.push_back(Triangle32(start + b, start + a, start + c));
+      tri_indices.push_back(Triangle32(start + b, start + c, start + d));
+    }
+  }
+
+  for (unsigned int i = 0; i < points.size(); ++i) {
+    points[i] = pose.transform(points[i]);
+  }
+
+  model.beginModel();
+  model.addSubModel(points, tri_indices);
+  model.endModel();
+  model.computeLocalAABB();
+}
+
+/// @brief Generate BVH model from truncated cone
+/// Difference from generateBVHModel: is that it gives the circle split number
+/// tot for a truncated cone with unit (larger) radius. For a truncated cone
+/// with a larger radius, the number of circle split number is r * tot.
+template <typename BV>
+void generateBVHModel(BVHModel<BV>& model, const TruncatedCone& shape,
+                      const Transform3s& pose,
+                      unsigned int tot_for_unit_truncated_cone) {
+  Scalar r = (std::max)(shape.radiusBottom, shape.radiusTop);
+  Scalar h = 2 * shape.halfLength;
+
+  const Scalar pi = boost::math::constants::pi<Scalar>();
+  unsigned int tot = (unsigned int)(Scalar(tot_for_unit_truncated_cone) * r);
+  Scalar phid = pi * 2 / Scalar(tot);
+
+  Scalar circle_edge = phid * r;
+  unsigned int h_num = (unsigned int)ceil(h / circle_edge);
+
+  generateBVHModel(model, shape, pose, tot, h_num);
+}
+
 /// @brief Generate BVH model from cone, given the number of segments along
 /// circle and the number of segments along axis.
 template <typename BV>

@@ -544,6 +544,13 @@ BOOST_AUTO_TEST_CASE(test_shapes) {
   }
 
   {
+    TruncatedCone tcone(1., 0.5, 2.), tcone_copy(10., 10., 10.);
+    tcone.setSweptSphereRadius(1.);
+    tcone.computeLocalAABB();
+    test_serialization(tcone, tcone_copy);
+  }
+
+  {
     Halfspace hs(Vec3s::Random(), 1.), hs_copy(Vec3s::Zero(), 0.);
     hs.setSweptSphereRadius(1.);
     hs.computeLocalAABB();
