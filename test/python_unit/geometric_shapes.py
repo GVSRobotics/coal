@@ -154,6 +154,68 @@ class TestGeometricShapes(TestCase):
         Ic_ref = np.diag([Icx_ref, Icx_ref, Iz_ref])
         self.assertApprox(Ic, Ic_ref)
 
+    def test_truncated_cone(self):
+        tcone = coal.TruncatedCone(1.0, 0.5, 2.0)
+        self.assertIsInstance(tcone, coal.TruncatedCone)
+        self.assertIsInstance(tcone, coal.ShapeBase)
+        self.assertIsInstance(tcone, coal.CollisionGeometry)
+        self.assertEqual(tcone.getNodeType(), coal.NODE_TYPE.GEOM_TRUNCATEDCONE)
+        self.assertEqual(tcone.radiusBottom, 1.0)
+        self.assertEqual(tcone.radiusTop, 0.5)
+        self.assertEqual(tcone.halfLength, 1.0)
+        tcone.radiusBottom = 3.0
+        tcone.radiusTop = 2.0
+        tcone.halfLength = 4.0
+        self.assertEqual(tcone.radiusBottom, 3.0)
+        self.assertEqual(tcone.radiusTop, 2.0)
+        self.assertEqual(tcone.halfLength, 4.0)
+
+        a = tcone.radiusBottom
+        b = tcone.radiusTop
+        h = tcone.halfLength
+        S2 = a * a + a * b + b * b
+        S4 = a**4 + a**3 * b + a**2 * b**2 + a * b**3 + b**4
+        T = 2 * a * a + a * b + 2 * b * b
+
+        com_z_ref = h * (b * b - a * a) / (2.0 * S2)
+        com = tcone.computeCOM()
+        self.assertApprox(com, np.array([0.0, 0.0, com_z_ref]))
+
+        V = tcone.computeVolume()
+        V_ref = np.pi * (2.0 * h) * S2 / 3.0
+        self.assertApprox(V, V_ref)
+
+        I0 = tcone.computeMomentofInertia()
+        Ix_ref = V_ref * (3.0 * S4 / (20.0 * S2) + h * h * T / (5.0 * S2))
+        Iz_ref = 0.3 * V_ref * S4 / S2
+        I0_ref = np.diag([Ix_ref, Ix_ref, Iz_ref])
+        self.assertApprox(I0, I0_ref)
+
+        Ic = tcone.computeMomentofInertiaRelatedToCOM()
+        Icx_ref = Ix_ref - V_ref * com_z_ref**2
+        Ic_ref = np.diag([Icx_ref, Icx_ref, Iz_ref])
+        self.assertApprox(Ic, Ic_ref)
+
+        # Degenerate limits: radiusTop -> 0 matches Cone, radiusTop ==
+        # radiusBottom matches Cylinder.
+        tcone_as_cone = coal.TruncatedCone(1.0, 0.0, 2.0)
+        cone_ref = coal.Cone(1.0, 2.0)
+        self.assertApprox(tcone_as_cone.computeVolume(), cone_ref.computeVolume())
+        self.assertApprox(
+            tcone_as_cone.computeMomentofInertia(), cone_ref.computeMomentofInertia()
+        )
+        self.assertApprox(tcone_as_cone.computeCOM(), cone_ref.computeCOM())
+
+        tcone_as_cylinder = coal.TruncatedCone(1.0, 1.0, 2.0)
+        cylinder_ref = coal.Cylinder(1.0, 2.0)
+        self.assertApprox(
+            tcone_as_cylinder.computeVolume(), cylinder_ref.computeVolume()
+        )
+        self.assertApprox(
+            tcone_as_cylinder.computeMomentofInertia(),
+            cylinder_ref.computeMomentofInertia(),
+        )
+
     def test_BVH(self):
         bvh = coal.BVHModelOBBRSS()
         self.assertEqual(bvh.num_vertices, 0)

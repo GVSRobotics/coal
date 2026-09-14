@@ -30,13 +30,18 @@ COAL_DLLAPI CollisionGeometry* extract(const CollisionGeometry* model,
  * \brief Returns the name associated to a NODE_TYPE
  */
 inline const char* get_node_type_name(NODE_TYPE node_type) {
+  // Note: this array is indexed positionally by the NODE_TYPE enum value, so
+  // it must have exactly one entry per enumerator (GEOM_CONVEX16 and
+  // GEOM_CONVEX32 included separately, even though GEOM_CONVEX is an alias
+  // for GEOM_CONVEX32) or every name after a missing entry silently shifts.
   static const char* node_type_name_all[] = {
-      "BV_UNKNOWN",     "BV_AABB",       "BV_OBB",      "BV_RSS",
-      "BV_kIOS",        "BV_OBBRSS",     "BV_KDOP16",   "BV_KDOP18",
-      "BV_KDOP24",      "GEOM_BOX",      "GEOM_SPHERE", "GEOM_CAPSULE",
-      "GEOM_CONE",      "GEOM_CYLINDER", "GEOM_CONVEX", "GEOM_PLANE",
-      "GEOM_HALFSPACE", "GEOM_TRIANGLE", "GEOM_OCTREE", "GEOM_ELLIPSOID",
-      "HF_AABB",        "HF_OBBRSS",     "NODE_COUNT"};
+      "BV_UNKNOWN",       "BV_AABB",         "BV_OBB",        "BV_RSS",
+      "BV_kIOS",          "BV_OBBRSS",       "BV_KDOP16",     "BV_KDOP18",
+      "BV_KDOP24",        "GEOM_BOX",        "GEOM_SPHERE",   "GEOM_CAPSULE",
+      "GEOM_CONE",        "GEOM_CYLINDER",   "GEOM_CONVEX16", "GEOM_CONVEX",
+      "GEOM_PLANE",       "GEOM_HALFSPACE",  "GEOM_TRIANGLE", "GEOM_OCTREE",
+      "GEOM_ELLIPSOID",   "GEOM_TRUNCATEDCONE",
+      "HF_AABB",          "HF_OBBRSS",       "NODE_COUNT"};
 
   return node_type_name_all[node_type];
 }

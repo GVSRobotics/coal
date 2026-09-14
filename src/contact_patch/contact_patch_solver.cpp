@@ -113,6 +113,9 @@ ContactPatchSolver::makeSupportSetFunction(const ShapeBase* shape,
       return details::getShapeSupportSetTpl<Cone, Options::NoSweptSphere>;
     case GEOM_CYLINDER:
       return details::getShapeSupportSetTpl<Cylinder, Options::NoSweptSphere>;
+    case GEOM_TRUNCATEDCONE:
+      return details::getShapeSupportSetTpl<TruncatedCone,
+                                            Options::NoSweptSphere>;
     case GEOM_CONVEX16:
       return details::getConvexBaseSupportSetTpl<Triangle16::IndexType,
                                                  Options::NoSweptSphere>;

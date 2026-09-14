@@ -61,7 +61,7 @@ enum OBJECT_TYPE {
 
 /// @brief traversal node type: bounding volume (AABB, OBB, RSS, kIOS, OBBRSS,
 /// KDOP16, KDOP18, kDOP24), basic shape (box, sphere, ellipsoid, capsule, cone,
-/// cylinder, convex, plane, triangle), and octree
+/// cylinder, truncated cone, convex, plane, triangle), and octree
 enum NODE_TYPE {
   BV_UNKNOWN,
   BV_AABB,
@@ -85,6 +85,7 @@ enum NODE_TYPE {
   GEOM_TRIANGLE,
   GEOM_OCTREE,
   GEOM_ELLIPSOID,
+  GEOM_TRUNCATEDCONE,
   HF_AABB,
   HF_OBBRSS,
   NODE_COUNT

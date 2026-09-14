@@ -303,6 +303,8 @@ std::string getNodeTypeName(NODE_TYPE node_type) {
     return std::string("GEOM_CONE");
   else if (node_type == GEOM_CYLINDER)
     return std::string("GEOM_CYLINDER");
+  else if (node_type == GEOM_TRUNCATEDCONE)
+    return std::string("GEOM_TRUNCATEDCONE");
   else if (node_type == GEOM_CONVEX)
     return std::string("GEOM_CONVEX");
   else if (node_type == GEOM_PLANE)
@@ -537,6 +539,13 @@ Cylinder makeRandomCylinder(std::array<Scalar, 2> min_size,
                   rand_interval(min_size[1], max_size[1]));
 }
 
+TruncatedCone makeRandomTruncatedCone(std::array<Scalar, 3> min_size,
+                                      std::array<Scalar, 3> max_size) {
+  return TruncatedCone(rand_interval(min_size[0], max_size[0]),
+                       rand_interval(min_size[1], max_size[1]),
+                       rand_interval(min_size[2], max_size[2]));
+}
+
 ConvexTpl<Triangle32> makeRandomConvex(Scalar min_size, Scalar max_size) {
   Ellipsoid ellipsoid = makeRandomEllipsoid(min_size, max_size);
   return constructPolytopeFromEllipsoid(ellipsoid);
@@ -580,6 +589,11 @@ std::shared_ptr<ShapeBase> makeRandomGeometry(NODE_TYPE node_type) {
     case GEOM_CYLINDER:
       return std::make_shared<Cylinder>(makeRandomCylinder(
           {Scalar(0.1), Scalar(0.2)}, {Scalar(0.8), Scalar(1.0)}));
+      break;
+    case GEOM_TRUNCATEDCONE:
+      return std::make_shared<TruncatedCone>(makeRandomTruncatedCone(
+          {Scalar(0.1), Scalar(0.1), Scalar(0.2)},
+          {Scalar(0.8), Scalar(0.8), Scalar(1.0)}));
       break;
     case GEOM_CONVEX:
       return std::make_shared<ConvexTpl<Triangle32>>(

@@ -539,6 +539,58 @@ BOOST_AUTO_TEST_CASE(halfspace_cone) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(halfspace_truncated_cone) {
+  const Halfspace hspace(0, 0, 1, 0);
+  const Scalar radius_bottom = Scalar(0.25);
+  const Scalar radius_top = Scalar(0.15);
+  const Scalar height = 1.;
+  const TruncatedCone tcone(radius_bottom, radius_top, height);
+
+  const Transform3s tf1;
+  Transform3s tf2;
+  // set translation to have a collision on the (bottom, larger) base
+  const Scalar offset = Scalar(0.001);
+  tf2.setTranslation(Vec3s(0, 0, height / 2 - offset));
+
+  const size_t num_max_contact = 1;
+  const CollisionRequest col_req(CollisionRequestFlag::CONTACT,
+                                 num_max_contact);
+  CollisionResult col_res;
+  coal::collide(&hspace, tf1, &tcone, tf2, col_req, col_res);
+  BOOST_CHECK(col_res.isCollision());
+
+  const ContactPatchRequest patch_req;
+  ContactPatchResult patch_res(patch_req);
+  coal::computeContactPatch(&hspace, tf1, &tcone, tf2, col_res, patch_req,
+                            patch_res);
+  BOOST_CHECK(patch_res.numContactPatches() == 1);
+
+  if (patch_res.numContactPatches() > 0 && col_res.isCollision()) {
+    const Contact& contact = col_res.getContact(0);
+    const Scalar tol = Scalar(1e-6);
+    EIGEN_VECTOR_IS_APPROX(contact.normal, hspace.n, tol);
+
+    const size_t expected_size = ContactPatch::default_preallocated_size;
+    ContactPatch expected(expected_size);
+    expected.tf.rotation() =
+        constructOrthonormalBasisFromVector(contact.normal);
+    expected.tf.translation() = contact.pos;
+    expected.penetration_depth = contact.penetration_depth;
+    const Scalar angle_increment = 2.0 * (Scalar)(EIGEN_PI) / ((Scalar)(6));
+    for (size_t i = 0; i < ContactPatch::default_preallocated_size; ++i) {
+      const Scalar theta = (Scalar)(i)*angle_increment;
+      Vec3s point_on_base(std::cos(theta) * tcone.radiusBottom,
+                          std::sin(theta) * tcone.radiusBottom,
+                          -tcone.halfLength);
+      expected.addPoint(tf2.transform(point_on_base));
+    }
+
+    const ContactPatch& contact_patch = patch_res.getContactPatch(0);
+    BOOST_CHECK(expected.tf == contact_patch.tf);
+    BOOST_CHECK(expected.isSame(contact_patch, tol));
+  }
+}
+
 BOOST_AUTO_TEST_CASE(halfspace_cylinder) {
   const Halfspace hspace(0, 0, 1, 0);
   const Scalar radius = Scalar(0.25);

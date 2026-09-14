@@ -364,8 +364,9 @@ void test_collide_swept_sphere_radius(S1& shape1, S2& shape2) {
 }
 
 const std::vector<NODE_TYPE> tested_geometries = {
-    GEOM_BOX,      GEOM_SPHERE, GEOM_ELLIPSOID, GEOM_CAPSULE,  GEOM_CONE,
-    GEOM_CYLINDER, GEOM_CONVEX, GEOM_PLANE,     GEOM_HALFSPACE};
+    GEOM_BOX,      GEOM_SPHERE,   GEOM_ELLIPSOID,     GEOM_CAPSULE,
+    GEOM_CONE,     GEOM_CYLINDER, GEOM_TRUNCATEDCONE, GEOM_CONVEX,
+    GEOM_PLANE,    GEOM_HALFSPACE};
 
 BOOST_AUTO_TEST_CASE(ssr_geom_geom) {
   // Each possible geom pair is tested twice

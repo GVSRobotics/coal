@@ -62,6 +62,7 @@ class Capsule;
 class Cone;
 class TriangleP;
 class Cylinder;
+class TruncatedCone;
 class Halfspace;
 class Plane;
 
@@ -77,6 +78,7 @@ struct register_type<CollisionGeometry> {
     ar.template register_type<Capsule>();
     ar.template register_type<Cone>();
     ar.template register_type<Cylinder>();
+    ar.template register_type<TruncatedCone>();
     ar.template register_type<Halfspace>();
     ar.template register_type<Plane>();
     ar.template register_type<OcTree>();

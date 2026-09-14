@@ -85,6 +85,16 @@ void serialize(Archive& ar, coal::Cylinder& cylinder,
 }
 
 template <class Archive>
+void serialize(Archive& ar, coal::TruncatedCone& tcone,
+               const unsigned int /*version*/) {
+  ar& make_nvp("base",
+               boost::serialization::base_object<coal::ShapeBase>(tcone));
+  ar& make_nvp("radiusBottom", tcone.radiusBottom);
+  ar& make_nvp("radiusTop", tcone.radiusTop);
+  ar& make_nvp("halfLength", tcone.halfLength);
+}
+
+template <class Archive>
 void serialize(Archive& ar, coal::Halfspace& half_space,
                const unsigned int /*version*/) {
   ar& make_nvp("base",
@@ -114,6 +124,7 @@ COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Ellipsoid)
 COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Capsule)
 COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Cone)
 COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Cylinder)
+COAL_SERIALIZATION_DECLARE_EXPORT(::coal::TruncatedCone)
 COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Halfspace)
 COAL_SERIALIZATION_DECLARE_EXPORT(::coal::Plane)
 

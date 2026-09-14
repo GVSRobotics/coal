@@ -61,6 +61,7 @@ void exposeCollisionGeometries(nb::module_& m) {
       .value("GEOM_CAPSULE", GEOM_CAPSULE)
       .value("GEOM_CONE", GEOM_CONE)
       .value("GEOM_CYLINDER", GEOM_CYLINDER)
+      .value("GEOM_TRUNCATEDCONE", GEOM_TRUNCATEDCONE)
       .value("GEOM_CONVEX", GEOM_CONVEX)
       .value("GEOM_PLANE", GEOM_PLANE)
       .value("GEOM_HALFSPACE", GEOM_HALFSPACE)

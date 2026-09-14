@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>coal solver playground</title>
+<style>
+  :root {
+    --bg: #0b0e12; --bg-glow: #12233a;
+    --panel: #14181e; --panel-2: #171c23;
+    --line: #262b34; --line-soft: #1d222a;
+    --text: #e9edf3; --muted: #9aa4b2; --muted-dim: #6b7482;
+    --accent: #4fa3ff; --accent-2: #6ee7ff;
+    --good: #3ecf8e; --bad: #ff6b6b; --warn: #e8a33d; --violet: #c08bff;
+    --radius: 12px;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; color: var(--text);
+    background: radial-gradient(1200px 460px at 18% -12%, var(--bg-glow), transparent 62%), var(--bg);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: rgba(79,163,255,.3); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--mono); color: var(--accent-2); font-size: .92em; overflow-wrap: anywhere; }
+  sub { font-size: .72em; }
+
+  .page { max-width: 1140px; margin: 0 auto; }
+
+  header {
+    padding: 26px 28px 20px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,.025), transparent);
+  }
+  .title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 22px; letter-spacing: -.01em; color: var(--text); }
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    header h1 {
+      background: linear-gradient(90deg, var(--text), #aebdcf);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+  }
+  .live {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px 3px 8px; border: 1px solid rgba(62,207,142,.35); border-radius: 999px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--good); background: rgba(62,207,142,.08);
+  }
+  .live::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good);
+    animation: pulse 2.2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(62,207,142,.5); }
+    70% { box-shadow: 0 0 0 7px rgba(62,207,142,0); }
+    100% { box-shadow: 0 0 0 0 rgba(62,207,142,0); }
+  }
+  header p { margin: 11px 0 0; color: var(--muted); max-width: 74ch; }
+
+  .wrap { display: flex; gap: 22px; padding: 22px 28px 6px; align-items: flex-start; flex-wrap: wrap; }
+  .col {
+    min-width: 0;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 20px 40px -28px rgba(0,0,0,.8);
+  }
+  .controls { width: 360px; flex: 0 0 auto; padding: 4px 18px 16px; }
+  .stage { flex: 1 1 460px; max-width: 580px; padding: 18px; }
+
+  .sec { padding: 13px 0; border-top: 1px solid var(--line-soft); }
+  .sec:first-child { border-top: 0; padding-top: 10px; }
+  .sec > h2 {
+    margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px;
+  }
+  .sec > h2::before { content: ""; width: 3px; height: 12px; border-radius: 2px; background: linear-gradient(var(--accent), var(--accent-2)); }
+  .hint { margin: 0 0 9px; color: var(--muted-dim); font-size: 12px; line-height: 1.5; }
+
+  .field { display: block; margin: 0 0 5px; color: var(--muted-dim); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+  .field b { color: var(--muted); font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+  select, input[type=range], input[type=number] { width: 100%; }
+  select, input[type=number] {
+    background: #0e1217; color: var(--text); font: inherit; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 9px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=number] { cursor: text; }
+  select:hover, input[type=number]:hover { border-color: #37404c; }
+  select:focus-visible, input[type=number]:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,163,255,.18); }
+
+  .shape-row { display: flex; gap: 7px; align-items: center; margin-bottom: 10px; }
+  .shape-row select { flex: 1; }
+
+  .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin: 0 0 10px; }
+  .param-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; color: var(--muted-dim); text-transform: uppercase; letter-spacing: .04em; }
+
+  .subhead { margin: 11px 0 6px; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted-dim); }
+  .subhead:first-of-type { margin-top: 0; }
+  .slider { margin-bottom: 7px; }
+  .slider-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .slider-row span { color: var(--muted); font-size: 12px; }
+  .slider-row b { color: var(--accent-2); font-weight: 600; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: #2b323d; }
+  input[type=range]::-moz-range-track { height: 4px; border-radius: 999px; background: #2b323d; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; margin-top: -6px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 10px rgba(79,163,255,.5); transition: transform .12s;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--bg);
+    background: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 10px rgba(79,163,255,.5);
+  }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.16); }
+  input[type=range]:focus-visible { outline: none; }
+  input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(79,163,255,.3); }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; color: #06131f;
+    background: linear-gradient(180deg, var(--accent), #3f8fe6);
+    border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 9px 15px;
+    box-shadow: 0 8px 20px -10px rgba(79,163,255,.75);
+    transition: transform .12s, box-shadow .15s, filter .15s, background .15s;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px -10px rgba(79,163,255,.85); filter: brightness(1.05); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(79,163,255,.4); }
+  button.quiet { background: #1c222b; color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+  button.quiet:hover:not(:disabled) { background: #232a34; border-color: #333d49; box-shadow: none; }
+  button.mini { padding: 7px 10px; font-size: 15px; line-height: 1; }
+  button.grow { flex: 1; }
+  button:disabled { opacity: .38; cursor: not-allowed; }
+
+  .status {
+    margin-top: 12px; color: var(--muted); font-size: 12.5px; min-height: 1.5em; line-height: 1.45;
+    padding: 8px 11px; border-radius: 8px; background: #0e1217; border: 1px solid var(--line-soft);
+  }
+
+  .results { margin-top: 14px; display: grid; grid-template-columns: minmax(0,0.85fr) minmax(0,1.15fr); gap: 0 14px; font-size: 12.5px; }
+  .results > div { padding: 6px 0; border-top: 1px solid var(--line-soft); }
+  .results > div:nth-child(1), .results > div:nth-child(2) { border-top: 0; }
+  .results .k { color: var(--muted); }
+  .results > div:not(.k) { font-family: var(--mono); color: var(--text); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--mono); letter-spacing: .02em; }
+  .badge.good { background: rgba(62,207,142,.15); color: var(--good); }
+  .badge.bad { background: rgba(255,107,107,.15); color: var(--bad); }
+  .badge.neutral { background: rgba(154,164,178,.15); color: var(--muted); }
+
+  .simplex-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 11.5px; }
+  .simplex-list .row { display: flex; gap: 8px; padding: 4px 7px; background: #0e1217; border: 1px solid var(--line-soft); border-radius: 6px; }
+  .simplex-list .row span { color: var(--muted-dim); }
+  .simplex-list .row.epa { border-color: rgba(192,139,255,.4); }
+
+  #canvasWrap {
+    position: relative; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--line); box-shadow: inset 0 0 70px rgba(0,0,0,.55);
+  }
+  canvas#stage {
+    width: 100%; max-width: 100%; aspect-ratio: 1 / 1; display: block; touch-action: none; cursor: grab;
+    background: radial-gradient(125% 125% at 50% 28%, #0c1015, #06090c);
+  }
+  canvas#stage:active { cursor: grabbing; }
+  .stage-btns { position: absolute; top: 10px; right: 10px; }
+  .stage-btns button { padding: 6px 11px; font-size: 12px; }
+
+  .legend { margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .legend p { margin: 8px 0 0; }
+  .legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-bottom: 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--muted); }
+  .chip .dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+  button.chip { border: 0; background: none; padding: 2px 4px; margin: -2px -4px; border-radius: 5px;
+    cursor: pointer; font: inherit; color: var(--muted); }
+  button.chip:hover { background: rgba(255,255,255,0.06); }
+  button.chip.off { opacity: 0.4; }
+  button.chip.off .label { text-decoration: line-through; }
+  button.chip.off .dot { box-shadow: none; }
+
+  footer { padding: 18px 28px 32px; color: var(--muted-dim); font-size: 12px; line-height: 1.65; max-width: 96ch; }
+
+  @media (max-width: 760px) {
+    .wrap { display: block; padding: 16px; }
+    .controls, .stage { width: auto; max-width: none; margin-bottom: 16px; }
+    .stage { margin-bottom: 0; }
+    header, footer { padding-left: 16px; padding-right: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="title-row">
+    <h1>coal Solver Playground</h1>
+    <span class="live">live wasm</span>
+  </div>
+  <p>The real <code>coal::collide</code> / <code>coal::distance</code> / <code>coal::computeContactPatch</code>
+     &mdash; the exact GJK/EPA collision library (compiled to WebAssembly, running right here, no
+     server) &mdash; for every pair of coal's primitive shapes. Pick two shapes, pose shape&nbsp;B in
+     6&nbsp;DoF, hit <b>Solve</b>, and inspect the witness points/normal/signed gap-depth, the actual
+     contact <b>manifold</b> when colliding (point, line, or 4-point surface patch), and (for
+     GJK/EPA pairs) the exact final simplex the algorithm converged on.</p>
+</header>
+
+<div class="wrap">
+  <div class="col controls">
+
+    <div class="sec">
+      <h2>Shapes</h2>
+      <label class="field" for="shapeA">Shape A <b>&mdash; fixed at the origin</b></label>
+      <div class="shape-row">
+        <select id="shapeA"></select>
+        <button class="quiet mini" id="randA" type="button" title="Randomize shape A's parameters">&#127922;</button>
+      </div>
+      <div id="paramsA" class="param-grid"></div>
+      <label class="field" for="shapeB">Shape B <b>&mdash; posed below</b></label>
+      <div class="shape-row">
+        <select id="shapeB"></select>
+        <button class="quiet mini" id="randB" type="button" title="Randomize shape B's parameters">&#127922;</button>
+      </div>
+      <div id="paramsB" class="param-grid"></div>
+    </div>
+
+    <div class="sec">
+      <h2>Body B pose</h2>
+      <div class="subhead">Translation</div>
+      <div class="slider">
+        <div class="slider-row"><span>t<sub>x</sub></span><b id="txVal">0.00</b></div>
+        <input type="range" id="tx" min="-3.5" max="3.5" step="0.02" value="0" />
+      </div>
+      <div class="slider">
+        <div class="slider-row"><span>t<sub>y</sub></span><b id="tyVal">0.00</b></div>
+        <input type="range" id="ty" min="-3.5" max="3.5" step="0.02" value="0" />
+      </div>
+      <div class="slider">
+        <div class="slider-row"><span>t<sub>z</sub></span><b id="tzVal">0.84</b></div>
+        <input type="range" id="tz" min="-3.5" max="3.5" step="0.02" value="0.84" />
+      </div>
+      <div class="subhead">Rotation &mdash; roll&thinsp;/&thinsp;pitch&thinsp;/&thinsp;yaw (deg)</div>
+      <div class="slider">
+        <div class="slider-row"><span>roll</span><b id="rollVal">0&deg;</b></div>
+        <input type="range" id="roll" min="0" max="360" step="1" value="0" />
+      </div>
+      <div class="slider">
+        <div class="slider-row"><span>pitch</span><b id="pitchVal">0&deg;</b></div>
+        <input type="range" id="pitch" min="0" max="360" step="1" value="0" />
+      </div>
+      <div class="slider">
+        <div class="slider-row"><span>yaw</span><b id="yawVal">0&deg;</b></div>
+        <input type="range" id="yaw" min="0" max="360" step="1" value="0" />
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Solve</h2>
+      <div class="btn-row">
+        <button id="solveBtn" class="grow" type="button">Solve</button>
+      </div>
+      <div class="btn-row">
+        <button class="quiet grow" id="randomBtn" type="button">Random pose</button>
+        <button class="quiet grow" id="touchBtn" type="button" disabled title="Translate body B by -gap*normal from the last solve.">Snap to touching</button>
+      </div>
+      <p class="status" id="status">Not solved yet.</p>
+
+      <div class="results" id="results" style="display:none">
+        <div class="k">collision</div><div id="rCollision"></div>
+        <div class="k">gap&nbsp;/&nbsp;&minus;depth</div><div id="rGap"></div>
+        <div class="k">witness p<sub>1</sub> (on A)</div><div id="rP1"></div>
+        <div class="k">witness p<sub>2</sub> (on B)</div><div id="rP2"></div>
+        <div class="k">normal (A&rarr;B)</div><div id="rNormal"></div>
+        <div class="k">num contacts</div><div id="rNumContacts"></div>
+      </div>
+      <div id="manifoldBlock" style="display:none">
+        <div class="subhead">contact manifold: <span id="rManifoldKind"></span></div>
+        <p class="hint" style="margin:0 0 6px">One normal, shared by every point of the patch.</p>
+        <div class="simplex-list" id="manifoldList"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>GJK / EPA diagnostics</h2>
+      <p class="hint" style="margin-bottom:0" id="gjkHint">Solve a pair to see this.</p>
+      <div id="gjkPanel" style="display:none">
+        <div class="results" style="grid-template-columns: minmax(0,0.85fr) minmax(0,1.15fr);">
+          <div class="k">gjk.status</div><div id="rGjkStatus"></div>
+          <div class="k">epa.status</div><div id="rEpaStatus"></div>
+        </div>
+        <div class="subhead">final GJK simplex (rank <span id="rRank">0</span>)</div>
+        <div class="simplex-list" id="simplexList"></div>
+        <div id="epaBlock" style="display:none">
+          <div class="subhead">EPA closest face</div>
+          <div class="simplex-list" id="epaList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col stage">
+    <div id="canvasWrap">
+      <canvas id="stage" width="640" height="640"></canvas>
+      <div class="stage-btns">
+        <button class="quiet" id="resetViewBtn" type="button">Reset view</button>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="chips">
+        <span class="chip"><span class="dot" style="color:#3a7ad6;background:#3a7ad6"></span>shape A (solid)</span>
+        <span class="chip"><span class="dot" style="color:#e08a2a;background:#e08a2a"></span>shape B (solid)</span>
+        <button type="button" class="chip" data-ov="witness"><span class="dot" style="color:#ff5252;background:#ff5252"></span><span class="label">contact manifold / witness points</span></button>
+        <button type="button" class="chip" data-ov="normal"><span class="dot" style="color:#3ecf8e;background:#3ecf8e"></span><span class="label">contact normal</span></button>
+        <button type="button" class="chip" data-ov="simplex"><span class="dot" style="color:#f2c94c;background:#f2c94c"></span><span class="label">GJK simplex (support pairs)</span></button>
+        <button type="button" class="chip" data-ov="epa"><span class="dot" style="color:#c08bff;background:#c08bff"></span><span class="label">EPA closest face</span></button>
+        <button type="button" class="chip" data-ov="frames"><span class="dot" style="background:linear-gradient(90deg,#e5484d,#2fa84f,#4c6ef5)"></span><span class="label">body frames (xyz)</span></button>
+      </div>
+      <p>Solid bodies are the true pose. When colliding, <span style="color:#ff5252">red</span>/<span style="color:#3a7ad6">blue</span>
+        dots show the actual contact <b>manifold</b> from coal's contact-patch solver, not just a single
+        closest-point pair: a genuine point contact draws 1, an edge/line contact draws its
+        <b>2</b> endpoints, and a face/face contact draws <b>4</b> points spanning the patch (the
+        maximum-area 4-point subset of the true polygon) &mdash; with the <span style="color:#3ecf8e">same
+        green normal</span> at every one of them, since a patch has exactly one normal by
+        construction. Separated pairs fall back to the single closest-point pair instead.</p>
+      <p><span style="color:#f2c94c">Yellow</span> markers are the final GJK simplex's support points
+        (each a pair: one on shape A, one on shape B, joined by a thin line) &mdash; up to 4 of them,
+        exactly what GJK converged on. <span style="color:#c08bff">Violet</span> marks EPA's closest
+        polytope face (only appears when the pair is actually penetrating and EPA had to run).
+        Plane/Halfspace pairs never show a simplex &mdash; coal resolves those in closed form, without
+        GJK.</p>
+      <p>Drag to orbit &middot; scroll or pinch to zoom.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- .page -->
+
+<footer>
+  Source: this demo lives in <code>visual/</code> of the
+  <a href="https://github.com/coal-library/coal">coal</a> repository (<code>visual/wasm/coal_wasm.cpp</code>
+  is the embind binding, built with Emscripten straight from coal's own sources &mdash; see
+  <code>visual/wasm/build.sh</code>). Shape&nbsp;A sits at the origin with identity orientation;
+  shape&nbsp;B's pose is whatever the sliders set, matching <code>coal::collide(o1, tf1, o2, tf2)</code>'s
+  own convention (tf1 = identity). Plane and Halfspace may be either shape, unlike some other
+  solvers &mdash; coal's closed-form Plane/Halfspace routines are symmetric in both slots.
+</footer>
+
+<script src="wasm/coal_wasm.js"></script>
+<script>
+"use strict";
+
+// ---------------------------------------------------------------------
+// Shape registry. Parameter names match visual/wasm/coal_wasm.cpp's spec
+// objects exactly (kind + the same field names coal's own constructors
+// use), and axes match coal's OWN local-frame convention: Cone, Cylinder,
+// TruncatedCone and Capsule all have their axis along local +Z (not +X --
+// this is coal's convention, see include/coal/shape/geometric_shapes.h),
+// base/bottom at z=-L/2, top at z=+L/2.
+// ---------------------------------------------------------------------
+// Ordered as a story, not alphabetically: round solids, then the
+// cylinder/cone taper family (Cylinder --no taper--> TruncatedCone --full
+// taper--> Cone are literally the same formula at different Rtop, see the
+// derivation in TruncatedCone's own docstring), then flat-faced polyhedra
+// (Box is a special case of Convex), then the two unbounded shapes last.
+var SHAPES = [
+  { label: "Sphere", kind: "sphere", params: [
+      { key: "R", label: "R", min: 0.1, max: 1.5, step: 0.01 } ] },
+  { label: "Ellipsoid", kind: "ellipsoid", params: [
+      { key: "a", label: "a", min: 0.1, max: 1.5, step: 0.01 },
+      { key: "b", label: "b", min: 0.1, max: 1.5, step: 0.01 },
+      { key: "c", label: "c", min: 0.1, max: 1.5, step: 0.01 } ] },
+  { label: "Capsule", kind: "capsule", params: [
+      { key: "R", label: "R", min: 0.05, max: 0.8, step: 0.01 },
+      { key: "L", label: "L", min: 0.2, max: 2.5, step: 0.01 } ] },
+  { label: "Cylinder", kind: "cylinder", params: [
+      { key: "R", label: "R", min: 0.05, max: 1.2, step: 0.01 },
+      { key: "L", label: "L", min: 0.2, max: 2.5, step: 0.01 } ] },
+  { label: "Truncated cone", kind: "truncatedcone", params: [
+      { key: "Rb", label: "R bottom", min: 0.05, max: 1.2, step: 0.01 },
+      { key: "Rt", label: "R top", min: 0, max: 1.2, step: 0.01 },
+      { key: "L", label: "L", min: 0.2, max: 2.5, step: 0.01 } ] },
+  { label: "Cone", kind: "cone", params: [
+      { key: "R", label: "R (base)", min: 0.05, max: 1.2, step: 0.01 },
+      { key: "L", label: "L", min: 0.2, max: 2.5, step: 0.01 } ] },
+  { label: "Box", kind: "box", params: [
+      { key: "sx", label: "sx", min: 0.1, max: 2.5, step: 0.01 },
+      { key: "sy", label: "sy", min: 0.1, max: 2.5, step: 0.01 },
+      { key: "sz", label: "sz", min: 0.1, max: 2.5, step: 0.01 } ] },
+  { label: "Convex (polytope)", kind: "convex", params: [] },
+  { label: "Plane (2-sided)", kind: "plane", params: [
+      { key: "d", label: "offset d", min: -2, max: 2, step: 0.01 } ] },
+  { label: "Halfspace (solid side: -n)", kind: "halfspace", params: [
+      { key: "d", label: "offset d", min: -2, max: 2, step: 0.01 } ] }
+];
+var DEFAULTS = [
+  { kind: "sphere", R: 0.6 },
+  { kind: "ellipsoid", a: 0.7, b: 0.5, c: 0.4 },
+  { kind: "capsule", R: 0.3, L: 1.0 },
+  { kind: "cylinder", R: 0.4, L: 1.0 },
+  { kind: "truncatedcone", Rb: 0.6, Rt: 0.3, L: 1.1 },
+  { kind: "cone", R: 0.5, L: 1.2 },
+  { kind: "box", sx: 1.0, sy: 0.8, sz: 0.6 },
+  { kind: "convex", points: [
+      [-0.5,-0.4,-0.45],[0.55,-0.5,-0.4],[0.45,0.5,-0.55],[-0.6,0.45,-0.4],
+      [-0.45,-0.55,0.5],[0.5,-0.45,0.6],[0.6,0.55,0.45],[-0.5,0.6,0.5] ] },
+  { kind: "plane", n: [0, 0, 1], d: 0 },
+  { kind: "halfspace", n: [0, 0, 1], d: 0 }
+];
+
+// coal's Convex/ConvexBase shape (its equivalent of a "polytope") is
+// vertex-based, not half-space-based -- so unlike a couple of other
+// solvers' Polytope (an intersection of half-spaces A.x<=b), this demo's
+// "Convex" is a point cloud: 8 vertices, each a random outward/inward
+// scaling of one corner of a unit box along its own corner direction. Fixed
+// box-like triangle topology (see kConvexTris below) matches
+// visual/wasm/coal_wasm.cpp's buildConvex() exactly -- but note this is purely
+// a RENDERING/labeling convenience: coal's actual support function for a
+// Convex only ever reads the vertex positions (getShapeSupportLinear,
+// src/narrowphase/support_functions.cpp), never the triangle list, so
+// collide()/distance() are exactly the true convex hull of the 8 points
+// regardless of how (ir)regular they are.
+var BOX_CORNERS = [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+var kConvexTris = [[0,1,2],[0,2,3],[4,5,6],[4,6,7],[0,1,5],[0,5,4],[3,2,6],[3,6,7],[0,3,7],[0,7,4],[1,2,6],[1,6,5]];
+function randomConvexPoints() {
+  return BOX_CORNERS.map(function (c) {
+    var s = rr(0.35, 0.85);
+    return [c[0] * s, c[1] * s, c[2] * s];
+  });
+}
+
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+function kindIndex(kind) { for (var i = 0; i < SHAPES.length; i++) if (SHAPES[i].kind === kind) return i; return 0; }
+function defaultOf(kind) { return clone(DEFAULTS[kindIndex(kind)]); }
+var shapeState = { A: null, B: null };
+function shapeParams(side) { return shapeState[side]; }
+
+function rr(a, b) { return a + Math.random() * (b - a); }
+function randUnit3() {
+  var z = rr(-1, 1), t = rr(0, 2 * Math.PI), r = Math.sqrt(Math.max(0, 1 - z * z));
+  return [r * Math.cos(t), r * Math.sin(t), z];
+}
+function randomShape(kind) {
+  switch (kind) {
+    case "box": return { kind: kind, sx: rr(0.3, 1.6), sy: rr(0.3, 1.6), sz: rr(0.3, 1.6) };
+    case "sphere": return { kind: kind, R: rr(0.3, 1.0) };
+    case "ellipsoid": return { kind: kind, a: rr(0.3, 1.0), b: rr(0.3, 1.0), c: rr(0.3, 1.0) };
+    case "capsule": return { kind: kind, R: rr(0.15, 0.5), L: rr(0.5, 1.8) };
+    case "cylinder": return { kind: kind, R: rr(0.2, 0.8), L: rr(0.5, 1.8) };
+    case "cone": return { kind: kind, R: rr(0.2, 0.8), L: rr(0.6, 2.0) };
+    case "truncatedcone": {
+      var rb = rr(0.4, 1.0);
+      return { kind: kind, Rb: rb, Rt: rb * rr(0, 0.7), L: rr(0.6, 2.0) };
+    }
+    case "plane": { var pn = randUnit3(); return { kind: kind, n: pn, d: rr(-1.2, 1.2) }; }
+    case "halfspace": { var hn = randUnit3(); return { kind: kind, n: hn, d: rr(-1.2, 1.2) }; }
+    case "convex": return { kind: kind, points: randomConvexPoints() };
+    default: return defaultOf("sphere");
+  }
+}
+// Spec sent to wasm: normalize n for plane/halfspace so d is a true signed
+// offset along a unit normal.
+function wasmSpec(shape) {
+  if (shape.kind !== "plane" && shape.kind !== "halfspace") return shape;
+  var n = shape.n, l = Math.hypot(n[0], n[1], n[2]) || 1;
+  return { kind: shape.kind, n: [n[0] / l, n[1] / l, n[2] / l], d: shape.d };
+}
+
+// ---------------------------------------------------------------------
+// Camera + projection + orbit drag (small hand-rolled perspective camera
+// on a 2D canvas -- no WebGL/Three.js dependency needed).
+// ---------------------------------------------------------------------
+var CAM_FOV = 0.62;
+function vnorm(v) { var l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+function vcross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function vdot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function vadd(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function vsub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function vscale(a, s) { return [a[0] * s, a[1] * s, a[2] * s]; }
+
+function buildCamera(dist, azim, elev) {
+  var eye = [dist * Math.cos(elev) * Math.sin(azim), dist * Math.sin(elev), dist * Math.cos(elev) * Math.cos(azim)];
+  var forward = vnorm([-eye[0], -eye[1], -eye[2]]);
+  var right = vnorm(vcross(forward, [0, 1, 0]));
+  var up = vcross(right, forward);
+  return { eye: eye, forward: forward, right: right, up: up, tanHalfFov: Math.tan(CAM_FOV / 2) };
+}
+function projectPoint(cam, w, h, P) {
+  var d = vsub(P, cam.eye);
+  var df = vdot(d, cam.forward), dr = vdot(d, cam.right), du = vdot(d, cam.up);
+  if (df <= 0.01) return null;
+  var ndcX = dr / (df * cam.tanHalfFov), ndcY = du / (df * cam.tanHalfFov);
+  return [(ndcX + 1) / 2 * w, (1 - ndcY) / 2 * h];
+}
+function wireOrbitDrag(canvas, orbit, onChange) {
+  var pts = {}; var lastX = 0, lastY = 0, pinchDist = 0;
+  function ids() { return Object.keys(pts); }
+  canvas.addEventListener("pointerdown", function (e) {
+    pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = "grabbing";
+    if (ids().length === 1) { lastX = e.clientX; lastY = e.clientY; }
+    if (ids().length === 2) pinchDist = twoPointDist();
+  });
+  function twoPointDist() { var k = ids(), a = pts[k[0]], b = pts[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+  canvas.addEventListener("pointermove", function (e) {
+    if (!(e.pointerId in pts)) return;
+    pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var n = ids().length;
+    if (n === 1) {
+      orbit.azim -= (e.clientX - lastX) * 0.008;
+      orbit.elev = Math.max(-1.4, Math.min(1.4, orbit.elev + (e.clientY - lastY) * 0.008));
+      lastX = e.clientX; lastY = e.clientY;
+      onChange();
+    } else if (n === 2) {
+      var d = twoPointDist();
+      if (pinchDist > 1) orbit.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, orbit.zoom * (pinchDist / d)));
+      pinchDist = d;
+      onChange();
+    }
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
+    canvas.addEventListener(ev, function (e) {
+      delete pts[e.pointerId];
+      canvas.style.cursor = "grab";
+      if (ids().length === 1) { var k = ids()[0]; lastX = pts[k].x; lastY = pts[k].y; }
+    });
+  });
+}
+
+// ---------------------------------------------------------------------
+// Pose helpers.
+// ---------------------------------------------------------------------
+function rotFromRPY(rollDeg, pitchDeg, yawDeg) {
+  var r = rollDeg * Math.PI / 180, p = pitchDeg * Math.PI / 180, y = yawDeg * Math.PI / 180;
+  var cr = Math.cos(r), sr = Math.sin(r), cp = Math.cos(p), sp = Math.sin(p), cy = Math.cos(y), sy = Math.sin(y);
+  var Rz = [[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]];
+  var Ry = [[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]];
+  var Rx = [[1, 0, 0], [0, cr, -sr], [0, sr, cr]];
+  function mm(A, B) {
+    var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) for (var k = 0; k < 3; k++) C[i][j] += A[i][k] * B[k][j];
+    return C;
+  }
+  return mm(mm(Rz, Ry), Rx);
+}
+function applyPose(R, t, p) {
+  return [
+    R[0][0] * p[0] + R[0][1] * p[1] + R[0][2] * p[2] + t[0],
+    R[1][0] * p[0] + R[1][1] * p[1] + R[1][2] * p[2] + t[1],
+    R[2][0] * p[0] + R[2][1] * p[1] + R[2][2] * p[2] + t[2]
+  ];
+}
+
+// ---------------------------------------------------------------------
+// Per-shape wireframes + solid faces, in the shape's OWN local frame
+// (caller applies pose). Axis convention matches coal exactly: Cone /
+// Cylinder / TruncatedCone / Capsule have their axis along local +Z,
+// base/bottom at z=-L/2, top at z=+L/2 (see
+// include/coal/shape/geometric_shapes.h).
+// ---------------------------------------------------------------------
+function ringWireframe(Rb, Rt, zBottom, zTop) {
+  var lines = [], N = 56, nGen = 18;
+  var bottom = [], top = [];
+  for (var i = 0; i <= N; i++) {
+    var ang = (i / N) * 2 * Math.PI;
+    bottom.push([Rb * Math.cos(ang), Rb * Math.sin(ang), zBottom]);
+    top.push([Rt * Math.cos(ang), Rt * Math.sin(ang), zTop]);
+  }
+  for (i = 0; i < N; i++) { lines.push([bottom[i], bottom[i + 1]]); lines.push([top[i], top[i + 1]]); }
+  for (i = 0; i < nGen; i++) {
+    var a2 = (i / nGen) * 2 * Math.PI;
+    lines.push([[Rb * Math.cos(a2), Rb * Math.sin(a2), zBottom], [Rt * Math.cos(a2), Rt * Math.sin(a2), zTop]]);
+  }
+  return lines;
+}
+function ringFaces(Rb, Rt, zBottom, zTop, capBottom, capTop) {
+  var N = 56, bottom = [], top = [], faces = [];
+  for (var i = 0; i <= N; i++) {
+    var ang = (i / N) * 2 * Math.PI;
+    bottom.push([Rb * Math.cos(ang), Rb * Math.sin(ang), zBottom]);
+    top.push([Rt * Math.cos(ang), Rt * Math.sin(ang), zTop]);
+  }
+  for (i = 0; i < N; i++) faces.push([bottom[i], bottom[i + 1], top[i + 1], top[i]]);
+  if (capBottom) faces.push(bottom.slice(0, N));
+  if (capTop) faces.push(top.slice(0, N));
+  return faces;
+}
+// Hemisphere capping a cylindrical body at z=capZ, bulging further in the
+// direction `sign` (+1 or -1) along z.
+function hemisphereWireframe(R, capZ, sign) {
+  var lines = [], rings = 8, seg = 40;
+  for (var r = 1; r <= rings; r++) {
+    var phi = (r / rings) * (Math.PI / 2);
+    var zr = capZ + sign * R * Math.sin(phi), rad = R * Math.cos(phi);
+    var pts = [];
+    for (var i = 0; i <= seg; i++) { var a = (i / seg) * 2 * Math.PI; pts.push([rad * Math.cos(a), rad * Math.sin(a), zr]); }
+    for (i = 0; i < seg; i++) lines.push([pts[i], pts[i + 1]]);
+  }
+  var merid = 14;
+  for (var m = 0; m < merid; m++) {
+    var a3 = (m / merid) * 2 * Math.PI, prev = [R * Math.cos(a3), R * Math.sin(a3), capZ];
+    for (var s = 1; s <= 16; s++) {
+      var phi2 = (s / 16) * (Math.PI / 2);
+      var pt = [R * Math.cos(phi2) * Math.cos(a3), R * Math.cos(phi2) * Math.sin(a3), capZ + sign * R * Math.sin(phi2)];
+      lines.push([prev, pt]); prev = pt;
+    }
+  }
+  return lines;
+}
+function hemisphereFaces(R, capZ, sign) {
+  var rings = 12, seg = 40, faces = [], ringPts = [];
+  for (var r = 0; r <= rings; r++) {
+    var phi = (r / rings) * (Math.PI / 2);
+    var zr = capZ + sign * R * Math.sin(phi), rad = R * Math.cos(phi);
+    var pts = [];
+    for (var i = 0; i <= seg; i++) { var a = (i / seg) * 2 * Math.PI; pts.push([rad * Math.cos(a), rad * Math.sin(a), zr]); }
+    ringPts.push(pts);
+  }
+  for (r = 0; r < rings; r++) for (i = 0; i < seg; i++) faces.push([ringPts[r][i], ringPts[r][i + 1], ringPts[r + 1][i + 1], ringPts[r + 1][i]]);
+  return faces;
+}
+function sphereLikeWireframe(a, b, c) {
+  var lines = [], rings = 14, seg = 48;
+  for (var r = 1; r < rings; r++) {
+    var phi = -Math.PI / 2 + (r / rings) * Math.PI, z = Math.sin(phi), rad = Math.cos(phi);
+    var pts = [];
+    for (var i = 0; i <= seg; i++) { var ang = (i / seg) * 2 * Math.PI; pts.push([a * rad * Math.cos(ang), b * rad * Math.sin(ang), c * z]); }
+    for (i = 0; i < seg; i++) lines.push([pts[i], pts[i + 1]]);
+  }
+  var merid = 18;
+  for (var m = 0; m < merid; m++) {
+    var az = (m / merid) * 2 * Math.PI, prev = null;
+    for (var s = 0; s <= 36; s++) {
+      var phi2 = -Math.PI / 2 + (s / 36) * Math.PI;
+      var pt = [a * Math.cos(phi2) * Math.cos(az), b * Math.cos(phi2) * Math.sin(az), c * Math.sin(phi2)];
+      if (prev) lines.push([prev, pt]);
+      prev = pt;
+    }
+  }
+  return lines;
+}
+function sphereLikeFaces(a, b, c) {
+  var rings = 20, seg = 48, faces = [], ringPts = [];
+  for (var r = 0; r <= rings; r++) {
+    var phi = -Math.PI / 2 + (r / rings) * Math.PI, z = Math.sin(phi), rad = Math.cos(phi);
+    var pts = [];
+    for (var i = 0; i <= seg; i++) { var ang = (i / seg) * 2 * Math.PI; pts.push([a * rad * Math.cos(ang), b * rad * Math.sin(ang), c * z]); }
+    ringPts.push(pts);
+  }
+  for (r = 0; r < rings; r++) for (i = 0; i < seg; i++) faces.push([ringPts[r][i], ringPts[r][i + 1], ringPts[r + 1][i + 1], ringPts[r + 1][i]]);
+  return faces;
+}
+function boxWireframe(sx, sy, sz) {
+  var x = sx / 2, y = sy / 2, z = sz / 2;
+  var v = [[-x,-y,-z],[x,-y,-z],[x,y,-z],[-x,y,-z],[-x,-y,z],[x,-y,z],[x,y,z],[-x,y,z]];
+  var e = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  return e.map(function (p) { return [v[p[0]], v[p[1]]]; });
+}
+function boxFaces(sx, sy, sz) {
+  var x = sx / 2, y = sy / 2, z = sz / 2;
+  var v = [[-x,-y,-z],[x,-y,-z],[x,y,-z],[-x,y,-z],[-x,-y,z],[x,-y,z],[x,y,z],[-x,y,z]];
+  return [
+    [v[0],v[1],v[2],v[3]], [v[4],v[5],v[6],v[7]],
+    [v[0],v[1],v[5],v[4]], [v[3],v[2],v[6],v[7]],
+    [v[0],v[3],v[7],v[4]], [v[1],v[2],v[6],v[5]]
+  ];
+}
+var PLANE_SPAN = 6;
+function planeBasis(n) {
+  var u = vnorm(Math.abs(n[0]) < 0.9 ? vcross(n, [1, 0, 0]) : vcross(n, [0, 1, 0]));
+  return { u: u, v: vcross(n, u) };
+}
+function pAdd(p, a, b, pb) { return [p[0] + a * pb.u[0] + b * pb.v[0], p[1] + a * pb.u[1] + b * pb.v[1], p[2] + a * pb.u[2] + b * pb.v[2]]; }
+function planeWireframe(params) {
+  var n = vnorm(params.n), p0 = vscale(n, params.d), pb = planeBasis(n), s = PLANE_SPAN, m = 12, lines = [];
+  for (var i = 0; i <= m; i++) {
+    var t = -s + (2 * s) * i / m;
+    lines.push([pAdd(p0, t, -s, pb), pAdd(p0, t, s, pb)]);
+    lines.push([pAdd(p0, -s, t, pb), pAdd(p0, s, t, pb)]);
+  }
+  if (params.kind === "halfspace") {
+    // A few short inward tick marks (pointing along -n, the solid side).
+    var tickLen = 0.35;
+    for (var tx = -1; tx <= 1; tx++) for (var ty = -1; ty <= 1; ty++) {
+      var base = pAdd(p0, tx * s * 0.6, ty * s * 0.6, pb);
+      lines.push([base, vadd(base, vscale(n, -tickLen))]);
+    }
+  }
+  return lines;
+}
+function planeFaces(params) {
+  var n = vnorm(params.n), p0 = vscale(n, params.d), pb = planeBasis(n), s = PLANE_SPAN;
+  return [[pAdd(p0, s, -s, pb), pAdd(p0, s, s, pb), pAdd(p0, -s, s, pb), pAdd(p0, -s, -s, pb)]];
+}
+
+// Incremental 3D convex hull (standard beneath-beyond / QuickHull-family
+// algorithm): the 8 vertices are each perturbed independently along their
+// OWN corner direction, so the fixed box-edge topology (kConvexTris, used
+// only as the physics-side placeholder coal_wasm.cpp sends -- coal's
+// support function never reads it, see the note there) stops matching
+// reality as soon as perturbation is anything but tiny: a corner can end
+// up strictly INSIDE the hull of the others, or the true hull's faces can
+// simply differ from the original box's. Rendering off the fixed topology
+// in that case draws edges through the interior -- a shape that LOOKS
+// non-convex even though the actual collision geometry (governed only by
+// the vertex positions) is a perfectly valid convex hull throughout.
+// Returns a list of faces, each a [i,j,k] triple of indices into `points`,
+// consistently wound outward -- or null if the points are degenerate
+// (coplanar; never happens for 3 independently-perturbed random corners in
+// practice, but guarded anyway).
+function convexHullFaces(points) {
+  var EPS = 1e-9, n = points.length;
+  function sub(a, b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
+  function cross(a, b) { return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+  function dot(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+  function scl(a, s) { return [a[0]*s, a[1]*s, a[2]*s]; }
+  function len(a) { return Math.hypot(a[0], a[1], a[2]); }
+
+  // Seed tetrahedron: farthest point from p0, farthest from that line,
+  // farthest from that plane -- any non-degenerate tetrahedron works, this
+  // one just tends to be numerically well-conditioned.
+  var i0 = 0, i1 = 1, best = -1, i, d;
+  for (i = 1; i < n; i++) { d = len(sub(points[i], points[i0])); if (d > best) { best = d; i1 = i; } }
+  var dir01 = sub(points[i1], points[i0]), dd = dot(dir01, dir01) || 1;
+  var i2 = -1; best = -1;
+  for (i = 0; i < n; i++) {
+    if (i === i0 || i === i1) continue;
+    var v = sub(points[i], points[i0]);
+    var perp = sub(v, scl(dir01, dot(v, dir01) / dd));
+    d = len(perp);
+    if (d > best) { best = d; i2 = i; }
+  }
+  var nrm012 = cross(sub(points[i1], points[i0]), sub(points[i2], points[i0]));
+  var i3 = -1; best = -1;
+  for (i = 0; i < n; i++) {
+    if (i === i0 || i === i1 || i === i2) continue;
+    d = Math.abs(dot(nrm012, sub(points[i], points[i0])));
+    if (d > best) { best = d; i3 = i; }
+  }
+  if (i3 < 0 || best < EPS) return null;  // degenerate (coplanar) point set
+
+  var centroid = [0, 0, 0];
+  [i0, i1, i2, i3].forEach(function (idx) {
+    centroid[0] += points[idx][0] / 4; centroid[1] += points[idx][1] / 4; centroid[2] += points[idx][2] / 4;
+  });
+  function makeFace(a, b, c) {
+    var nrm = cross(sub(points[b], points[a]), sub(points[c], points[a]));
+    if (dot(nrm, sub(centroid, points[a])) > 0) { var t = b; b = c; c = t; nrm = cross(sub(points[b], points[a]), sub(points[c], points[a])); }
+    return { v: [a, b, c], n: nrm };
+  }
+  var faces = [makeFace(i0, i1, i2), makeFace(i0, i1, i3), makeFace(i0, i2, i3), makeFace(i1, i2, i3)];
+  var used = {}; used[i0] = used[i1] = used[i2] = used[i3] = true;
+
+  for (i = 0; i < n; i++) {
+    if (used[i]) continue;
+    var p = points[i];
+    var visible = faces.filter(function (f) { return dot(f.n, sub(p, points[f.v[0]])) > EPS; });
+    if (visible.length === 0) continue;  // p is inside the hull built so far -- not a hull vertex (this is exactly the case the old fixed-topology rendering got wrong)
+
+    var edgeCount = {};
+    function key(a, b) { return a < b ? a + "_" + b : b + "_" + a; }
+    visible.forEach(function (f) {
+      for (var k = 0; k < 3; k++) {
+        var a = f.v[k], b = f.v[(k + 1) % 3], ky = key(a, b);
+        if (!edgeCount[ky]) edgeCount[ky] = { count: 0, a: a, b: b };
+        edgeCount[ky].count++;
+      }
+    });
+    var horizon = Object.keys(edgeCount).map(function (k2) { return edgeCount[k2]; }).filter(function (e) { return e.count === 1; });
+
+    faces = faces.filter(function (f) { return visible.indexOf(f) === -1; });
+    horizon.forEach(function (e) {
+      faces.push({ v: [e.a, e.b, i], n: cross(sub(points[e.b], points[e.a]), sub(p, points[e.a])) });
+    });
+    used[i] = true;
+  }
+  return faces.map(function (f) { return f.v; });
+}
+function convexFaces(points) {
+  var hull = convexHullFaces(points) || kConvexTris;
+  return hull.map(function (t) { return [points[t[0]], points[t[1]], points[t[2]]]; });
+}
+function convexWireframe(points) {
+  var hull = convexHullFaces(points) || kConvexTris, lines = [], seen = {};
+  hull.forEach(function (t) {
+    for (var k = 0; k < 3; k++) {
+      var a = t[k], b = t[(k + 1) % 3], key = a < b ? a + "_" + b : b + "_" + a;
+      if (seen[key]) continue;
+      seen[key] = true;
+      lines.push([points[a], points[b]]);
+    }
+  });
+  return lines;
+}
+function convexRadius(points) {
+  var m = 0;
+  points.forEach(function (p) { m = Math.max(m, Math.hypot(p[0], p[1], p[2])); });
+  return m;
+}
+
+function buildWireframe(p) {
+  switch (p.kind) {
+    case "box": return boxWireframe(p.sx, p.sy, p.sz);
+    case "sphere": return sphereLikeWireframe(p.R, p.R, p.R);
+    case "ellipsoid": return sphereLikeWireframe(p.a, p.b, p.c);
+    case "capsule":
+      return ringWireframe(p.R, p.R, -p.L / 2, p.L / 2)
+        .concat(hemisphereWireframe(p.R, -p.L / 2, -1))
+        .concat(hemisphereWireframe(p.R, p.L / 2, +1));
+    case "cylinder": return ringWireframe(p.R, p.R, -p.L / 2, p.L / 2);
+    case "cone": return ringWireframe(p.R, 0, -p.L / 2, p.L / 2);
+    case "truncatedcone": return ringWireframe(p.Rb, p.Rt, -p.L / 2, p.L / 2);
+    case "plane": case "halfspace": return planeWireframe(p);
+    case "convex": return convexWireframe(p.points);
+    default: return [];
+  }
+}
+function buildFaces(p) {
+  switch (p.kind) {
+    case "box": return boxFaces(p.sx, p.sy, p.sz);
+    case "sphere": return sphereLikeFaces(p.R, p.R, p.R);
+    case "ellipsoid": return sphereLikeFaces(p.a, p.b, p.c);
+    case "capsule":
+      return ringFaces(p.R, p.R, -p.L / 2, p.L / 2, false, false)
+        .concat(hemisphereFaces(p.R, -p.L / 2, -1))
+        .concat(hemisphereFaces(p.R, p.L / 2, +1));
+    case "cylinder": return ringFaces(p.R, p.R, -p.L / 2, p.L / 2, true, true);
+    case "cone": return ringFaces(p.R, 0, -p.L / 2, p.L / 2, true, false);
+    case "truncatedcone": return ringFaces(p.Rb, p.Rt, -p.L / 2, p.L / 2, true, true);
+    case "plane": case "halfspace": return planeFaces(p);
+    case "convex": return convexFaces(p.points);
+    default: return [];
+  }
+}
+function wireframeRadius(p) {
+  switch (p.kind) {
+    case "box": return Math.hypot(p.sx, p.sy, p.sz) / 2;
+    case "sphere": return p.R;
+    case "ellipsoid": return Math.max(p.a, p.b, p.c);
+    case "capsule": return p.L / 2 + p.R;
+    case "cylinder": return Math.hypot(p.R, p.L / 2);
+    case "cone": return Math.hypot(p.R, p.L / 2);
+    case "truncatedcone": return Math.hypot(Math.max(p.Rb, p.Rt), p.L / 2);
+    case "plane": case "halfspace": return Math.abs(p.d) + 2.0;
+    case "convex": return convexRadius(p.points);
+    default: return 1.5;
+  }
+}
+
+// ---------------------------------------------------------------------
+// App state + wiring
+// ---------------------------------------------------------------------
+var Module = null;
+var orbit = { azim: 0.7, elev: 0.35, zoom: 1 };
+var ZOOM_MIN = 0.25, ZOOM_MAX = 4;
+var lastResult = null;
+var canvas = document.getElementById("stage");
+var ctx = canvas.getContext("2d");
+
+function buildParamInputs(side) {
+  var host = document.getElementById("params" + side);
+  host.innerHTML = "";
+  var kind = shapeState[side].kind;
+  var spec = SHAPES[kindIndex(kind)];
+  spec.params.forEach(function (p) {
+    var wrap = document.createElement("label");
+    var span = document.createElement("span");
+    span.textContent = p.label;
+    var inp = document.createElement("input");
+    inp.type = "number"; inp.step = p.step; inp.min = p.min; inp.max = p.max;
+    inp.value = shapeState[side][p.key];
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      if (isNaN(v)) return;
+      shapeState[side][p.key] = v;
+      clearResult();
+      render();
+    });
+    wrap.appendChild(span); wrap.appendChild(inp);
+    host.appendChild(wrap);
+  });
+}
+
+function fillSelects() {
+  ["shapeA", "shapeB"].forEach(function (id) {
+    var sel = document.getElementById(id);
+    SHAPES.forEach(function (s, i) {
+      var opt = document.createElement("option");
+      opt.value = i; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+  });
+  document.getElementById("shapeA").value = kindIndex("truncatedcone");
+  document.getElementById("shapeB").value = kindIndex("box");
+  shapeState.A = defaultOf("truncatedcone");
+  shapeState.B = defaultOf("box");
+  buildParamInputs("A"); buildParamInputs("B");
+}
+
+function currentPoseDeg() {
+  return {
+    tx: parseFloat(document.getElementById("tx").value),
+    ty: parseFloat(document.getElementById("ty").value),
+    tz: parseFloat(document.getElementById("tz").value),
+    roll: parseFloat(document.getElementById("roll").value),
+    pitch: parseFloat(document.getElementById("pitch").value),
+    yaw: parseFloat(document.getElementById("yaw").value)
+  };
+}
+// `<input type=range>` sanitizes its `.value` to the nearest `step` on ANY
+// assignment, script included (HTML spec, not a browser quirk) -- so the
+// sliders alone cannot hold a precise pose. `poseOverride`, when set, is
+// the authoritative full-precision pose (used by bodyBPose() below);
+// setPose() still moves the slider thumbs for visual feedback, but clears
+// it, handing control back to the (now merely indicative) slider values.
+var poseOverride = null;
+function setPose(p) {
+  poseOverride = null;
+  document.getElementById("tx").value = p.tx; document.getElementById("ty").value = p.ty; document.getElementById("tz").value = p.tz;
+  document.getElementById("roll").value = p.roll; document.getElementById("pitch").value = p.pitch; document.getElementById("yaw").value = p.yaw;
+  syncSliderLabels();
+}
+function syncSliderLabels() {
+  var p = currentPoseDeg();
+  document.getElementById("txVal").textContent = p.tx.toFixed(2);
+  document.getElementById("tyVal").textContent = p.ty.toFixed(2);
+  document.getElementById("tzVal").textContent = p.tz.toFixed(2);
+  document.getElementById("rollVal").textContent = p.roll.toFixed(0) + "°";
+  document.getElementById("pitchVal").textContent = p.pitch.toFixed(0) + "°";
+  document.getElementById("yawVal").textContent = p.yaw.toFixed(0) + "°";
+}
+["tx", "ty", "tz", "roll", "pitch", "yaw"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", function () {
+    poseOverride = null;  // dragging a slider takes back control from a precise pose
+    syncSliderLabels();
+    clearResult();
+    render();
+  });
+});
+
+function bodyBPose() {
+  if (poseOverride) return poseOverride;
+  var p = currentPoseDeg();
+  return { R: rotFromRPY(p.roll, p.pitch, p.yaw), t: [p.tx, p.ty, p.tz] };
+}
+function solveRt(R, t) {
+  return Module.solvePair(wasmSpec(shapeState.A), wasmSpec(shapeState.B), t[0], t[1], t[2],
+    R[0][0], R[0][1], R[0][2], R[1][0], R[1][1], R[1][2], R[2][0], R[2][1], R[2][2]);
+}
+function doSolve() {
+  var bp = bodyBPose();
+  var r = solveRt(bp.R, bp.t);
+  lastResult = r;
+  renderResults(r);
+  render();
+}
+
+function fmt3(p) { return "(" + p.map(function (x) { return x.toFixed(4); }).join(", ") + ")"; }
+function renderResults(r) {
+  var res = document.getElementById("results"), status = document.getElementById("status");
+  var touchBtn = document.getElementById("touchBtn");
+  res.style.display = "grid";
+  status.textContent = r.isCollision ? "Colliding." : "Separated.";
+  document.getElementById("rCollision").innerHTML =
+    '<span class="badge ' + (r.isCollision ? "bad" : "good") + '">' + (r.isCollision ? "colliding" : "clear") + "</span>";
+  document.getElementById("rGap").textContent = r.dist.toFixed(6) + (r.dist < 0 ? "  (penetrating)" : "  (gap)");
+  document.getElementById("rP1").textContent = fmt3(r.p1);
+  document.getElementById("rP2").textContent = fmt3(r.p2);
+  document.getElementById("rNormal").textContent = fmt3(r.normal);
+  document.getElementById("rNumContacts").textContent = r.numContacts;
+  touchBtn.disabled = false;
+
+  var manifoldBlock = document.getElementById("manifoldBlock");
+  if (r.manifoldKind && r.manifoldKind !== "none") {
+    manifoldBlock.style.display = "block";
+    var kindLabel = { point: "point (0D)", line: "line / edge (1D)", surface: "surface / face (2D)" }[r.manifoldKind] || r.manifoldKind;
+    document.getElementById("rManifoldKind").innerHTML =
+      '<span class="badge neutral">' + kindLabel + " &mdash; " + r.manifoldPoints.length + " point" + (r.manifoldPoints.length === 1 ? "" : "s") + "</span>";
+    var mlist = document.getElementById("manifoldList");
+    mlist.innerHTML = "";
+    r.manifoldPoints.forEach(function (v, i) {
+      var row = document.createElement("div"); row.className = "row";
+      row.innerHTML = "<span>m" + i + "</span> onA " + fmt3(v.onA) + " &nbsp; onB " + fmt3(v.onB);
+      mlist.appendChild(row);
+    });
+    var nrow = document.createElement("div"); nrow.className = "row";
+    nrow.innerHTML = "<span>normal</span> " + fmt3(r.manifoldNormal) + " (same at every point above)";
+    mlist.appendChild(nrow);
+  } else {
+    manifoldBlock.style.display = "none";
+  }
+
+  var gjkPanel = document.getElementById("gjkPanel"), gjkHint = document.getElementById("gjkHint");
+  if (!r.gjkApplicable) {
+    gjkPanel.style.display = "none";
+    gjkHint.style.display = "block";
+    gjkHint.textContent = r.gjkNote;
+  } else {
+    gjkHint.style.display = "none";
+    gjkPanel.style.display = "block";
+    document.getElementById("rGjkStatus").innerHTML =
+      '<span class="badge ' + (r.gjkStatus.indexOf("Collision") >= 0 ? "bad" : "good") + '">' + r.gjkStatus + "</span>";
+    document.getElementById("rEpaStatus").innerHTML =
+      '<span class="badge ' + (r.epaStatus === "DidNotRun" ? "neutral" : (r.epaStatus.indexOf("Valid") >= 0 || r.epaStatus.indexOf("Accuracy") >= 0 ? "good" : "bad")) + '">' + r.epaStatus + "</span>";
+    document.getElementById("rRank").textContent = r.simplex.length;
+    var list = document.getElementById("simplexList");
+    list.innerHTML = "";
+    r.simplex.forEach(function (v, i) {
+      var row = document.createElement("div"); row.className = "row";
+      row.innerHTML = "<span>v" + i + "</span> onA " + fmt3(v.onA) + " &nbsp; onB " + fmt3(v.onB);
+      list.appendChild(row);
+    });
+    var epaBlock = document.getElementById("epaBlock");
+    if (r.epaFace) {
+      epaBlock.style.display = "block";
+      var elist = document.getElementById("epaList");
+      elist.innerHTML = "";
+      r.epaFace.vertices.forEach(function (v, i) {
+        var row = document.createElement("div"); row.className = "row epa";
+        row.innerHTML = "<span>f" + i + "</span> onA " + fmt3(v.onA) + " &nbsp; onB " + fmt3(v.onB);
+        elist.appendChild(row);
+      });
+      var nrow = document.createElement("div"); nrow.className = "row epa";
+      nrow.innerHTML = "<span>normal</span> " + fmt3(r.epaFace.normal) + " &nbsp; depth " + r.epaFace.depth.toFixed(6);
+      elist.appendChild(nrow);
+    } else {
+      epaBlock.style.display = "none";
+    }
+  }
+}
+function clearResult(msg) {
+  lastResult = null;
+  document.getElementById("results").style.display = "none";
+  document.getElementById("manifoldBlock").style.display = "none";
+  document.getElementById("gjkPanel").style.display = "none";
+  document.getElementById("gjkHint").style.display = "block";
+  document.getElementById("gjkHint").textContent = "Solve a pair to see this.";
+  document.getElementById("touchBtn").disabled = true;
+  document.getElementById("status").textContent = msg || "Not solved yet.";
+}
+
+// "Snap to touching": re-poses body B along the LAST solved normal so the
+// signed gap becomes exactly zero -- reuses precisely the same
+// separate/bring-together arithmetic coal's own test suite uses
+// (test/normal_and_nearest_points.cpp): new_t = t - dist * normal. Goes
+// through `poseOverride` (not just the sliders) for the translation, since
+// the sliders alone can't hold a precise-enough value (see its declaration).
+function snapToTouching() {
+  if (!lastResult) return;
+  var bp = bodyBPose();
+  var p = currentPoseDeg();  // rotation only; snapToTouching never rotates
+  var n = lastResult.normal, d = lastResult.dist;
+  var t = [bp.t[0] - d * n[0], bp.t[1] - d * n[1], bp.t[2] - d * n[2]];
+  setPose({ tx: t[0], ty: t[1], tz: t[2], roll: p.roll, pitch: p.pitch, yaw: p.yaw });
+  poseOverride = { R: bp.R, t: t };  // setPose()'s slider snapping is cosmetic only -- restore full precision
+  doSolve();
+}
+
+var LIGHT_DIR = vnorm([0.5, 0.8, 0.4]);
+var BODY_COLOR_A = [58, 122, 214];
+var BODY_COLOR_B = [224, 138, 42];
+
+var OV = { witness: true, normal: true, simplex: true, epa: true, frames: true };
+try {
+  var savedOV = JSON.parse(localStorage.getItem("coal_playground_overlays") || "null");
+  if (savedOV) for (var k in OV) if (k in savedOV) OV[k] = !!savedOV[k];
+} catch (e) { /* private mode / blocked storage -- keep defaults */ }
+
+function render() {
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  var pA = shapeParams("A"), pB = shapeParams("B");
+  var wireA = buildWireframe(pA), wireB = buildWireframe(pB);
+  var facesA = buildFaces(pA), facesB = buildFaces(pB);
+  var _bp = bodyBPose();
+  var Rb = _bp.R, tB = _bp.t.slice();
+  var RA = [[1, 0, 0], [0, 1, 0], [0, 0, 1]], tA = [0, 0, 0];
+
+  var boundR = Math.max(wireframeRadius(pA), wireframeRadius(pB) + Math.hypot(tB[0], tB[1], tB[2]), 1.5);
+  var cam = buildCamera(boundR * 2.6 * orbit.zoom, orbit.azim, orbit.elev);
+
+  var drawables = [];
+  function collectFaces(faces, R, t, rgb, translucent) {
+    faces.forEach(function (face) {
+      var world = face.map(function (p) { return applyPose(R, t, p); });
+      var screen = world.map(function (p) { return projectPoint(cam, w, h, p); });
+      if (screen.some(function (s) { return !s; })) return;
+      var df = world.reduce(function (s, p) { return s + vdot(vsub(p, cam.eye), cam.forward); }, 0) / world.length;
+      var e1 = vsub(world[1], world[0]), e2 = vsub(world[2], world[0]);
+      var normal = vnorm(vcross(e1, e2));
+      var shade = 0.35 + 0.65 * Math.abs(vdot(normal, LIGHT_DIR));
+      drawables.push({ screen: screen, depth: df, rgb: rgb, shade: shade, alpha: translucent ? 0.45 : 0.92 });
+    });
+  }
+  collectFaces(facesA, RA, tA, BODY_COLOR_A, pA.kind === "plane" || pA.kind === "halfspace");
+  collectFaces(facesB, Rb, tB, BODY_COLOR_B, pB.kind === "plane" || pB.kind === "halfspace");
+  drawables.sort(function (a, b) { return b.depth - a.depth; });
+  drawables.forEach(function (d) {
+    var c = d.rgb;
+    ctx.fillStyle = "rgba(" + Math.round(c[0] * d.shade) + "," + Math.round(c[1] * d.shade) + "," + Math.round(c[2] * d.shade) + "," + d.alpha + ")";
+    ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    d.screen.forEach(function (s, i) { if (i === 0) ctx.moveTo(s[0], s[1]); else ctx.lineTo(s[0], s[1]); });
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  });
+
+  function drawWire(wire, R, t, color, lineWidth) {
+    ctx.strokeStyle = color; ctx.lineWidth = lineWidth || 1.0;
+    wire.forEach(function (seg) {
+      var p0 = applyPose(R, t, seg[0]), p1 = applyPose(R, t, seg[1]);
+      var s0 = projectPoint(cam, w, h, p0), s1 = projectPoint(cam, w, h, p1);
+      if (!s0 || !s1) return;
+      ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+    });
+  }
+  drawWire(wireA, RA, tA, "rgba(255,255,255,0.18)");
+  drawWire(wireB, Rb, tB, "rgba(255,255,255,0.18)");
+
+  function drawTriad(R, t, len) {
+    var AX = [[[len, 0, 0], "#e5484d"], [[0, len, 0], "#2fa84f"], [[0, 0, len], "#4c6ef5"]];
+    var s0 = projectPoint(cam, w, h, t); if (!s0) return;
+    AX.forEach(function (ax) {
+      var s1 = projectPoint(cam, w, h, applyPose(R, t, ax[0])); if (!s1) return;
+      ctx.strokeStyle = ax[1]; ctx.fillStyle = ax[1]; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+      var dx = s1[0] - s0[0], dy = s1[1] - s0[1], L = Math.hypot(dx, dy) || 1;
+      var ux = dx / L, uy = dy / L, px = -uy, py = ux;
+      ctx.beginPath();
+      ctx.moveTo(s1[0], s1[1]);
+      ctx.lineTo(s1[0] - ux * 8 + px * 4, s1[1] - uy * 8 + py * 4);
+      ctx.lineTo(s1[0] - ux * 8 - px * 4, s1[1] - uy * 8 - py * 4);
+      ctx.closePath(); ctx.fill();
+    });
+  }
+  if (OV.frames) {
+    var triadLen = boundR * 0.15;
+    drawTriad(RA, tA, triadLen);
+    drawTriad(Rb, tB, triadLen);
+  }
+
+  function drawArrow(origin, tip, color) {
+    var s0 = projectPoint(cam, w, h, origin), s1 = projectPoint(cam, w, h, tip);
+    if (!s0 || !s1) return;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+    var dx = s1[0] - s0[0], dy = s1[1] - s0[1], len = Math.hypot(dx, dy) || 1;
+    var ux = dx / len, uy = dy / len, headLen = 9, headW = 4.5;
+    var bx = s1[0] - ux * headLen, by = s1[1] - uy * headLen;
+    var px = -uy, py = ux;
+    ctx.beginPath();
+    ctx.moveTo(s1[0], s1[1]);
+    ctx.lineTo(bx + px * headW, by + py * headW);
+    ctx.lineTo(bx - px * headW, by - py * headW);
+    ctx.closePath(); ctx.fill();
+  }
+  function drawDot(P, color, r) {
+    var s = projectPoint(cam, w, h, P); if (!s) return;
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(s[0], s[1], r || 4.5, 0, 2 * Math.PI); ctx.fill();
+  }
+  function drawSeg(P0, P1, color, width, dash) {
+    var s0 = projectPoint(cam, w, h, P0), s1 = projectPoint(cam, w, h, P1);
+    if (!s0 || !s1) return;
+    ctx.strokeStyle = color; ctx.lineWidth = width || 1.2;
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+    if (dash) ctx.setLineDash([]);
+  }
+
+  if (lastResult && lastResult.ok) {
+    var r = lastResult;
+    // Diagnostic overlays (GJK simplex, EPA face) drawn FIRST so the
+    // manifold/witness markers below always land on top -- both can occupy
+    // the same small contact region, and burying the manifold under them
+    // made it easy to miss even when correctly computed.
+    if (OV.simplex && r.gjkApplicable) {
+      r.simplex.forEach(function (v) {
+        drawSeg(v.onA, v.onB, "rgba(242,201,76,0.55)", 1, [2, 2]);
+        drawDot(v.onA, "#f2c94c", 3.6);
+        drawDot(v.onB, "#f2c94c", 3.6);
+      });
+    }
+    if (OV.epa && r.gjkApplicable && r.epaFace) {
+      var fv = r.epaFace.vertices;
+      // Triangle outline on each body (onA triangle, onB triangle).
+      function triOutline(key, color) {
+        for (var i = 0; i < fv.length; i++) drawSeg(fv[i][key], fv[(i + 1) % fv.length][key], color, 1.6);
+      }
+      triOutline("onA", "rgba(192,139,255,0.8)");
+      triOutline("onB", "rgba(192,139,255,0.8)");
+      fv.forEach(function (v) { drawSeg(v.onA, v.onB, "rgba(192,139,255,0.35)", 1); });
+    }
+
+    var hasManifold = r.manifoldKind && r.manifoldKind !== "none" && r.manifoldPoints.length > 0;
+    // A real contact manifold (line: 2 points, surface: 4 points) supersedes
+    // the single closest-point pair -- same normal at every point, per
+    // ContactPatch's own design (coal only ever reports one normal for a
+    // whole patch). Falls back to the single p1/p2 pair when separated (no
+    // manifold exists) or for a plain point contact.
+    if (hasManifold) {
+      var arrowLen = boundR * 0.32;
+      if (r.manifoldKind === "surface") {
+        // Faint quad outline joining the (up to 4) patch points, on each body.
+        function patchOutline(key, color) {
+          for (var i = 0; i < r.manifoldPoints.length; i++) {
+            drawSeg(r.manifoldPoints[i][key], r.manifoldPoints[(i + 1) % r.manifoldPoints.length][key], color, 1.3);
+          }
+        }
+        if (OV.witness) { patchOutline("onA", "rgba(255,82,82,0.5)"); patchOutline("onB", "rgba(58,122,214,0.5)"); }
+      } else if (r.manifoldKind === "line" && OV.witness) {
+        drawSeg(r.manifoldPoints[0].onA, r.manifoldPoints[1].onA, "rgba(255,82,82,0.7)", 1.6);
+        drawSeg(r.manifoldPoints[0].onB, r.manifoldPoints[1].onB, "rgba(58,122,214,0.7)", 1.6);
+      }
+      r.manifoldPoints.forEach(function (v) {
+        if (OV.witness) {
+          drawSeg(v.onA, v.onB, "rgba(255,82,82,0.55)", 1.1, [3, 2]);
+          drawDot(v.onA, "#ff5252");
+          drawDot(v.onB, "#3a7ad6");
+        }
+        if (OV.normal) drawArrow(v.onA, vadd(v.onA, vscale(r.manifoldNormal, arrowLen)), "#3ecf8e");
+      });
+    } else {
+      if (OV.witness) {
+        drawSeg(r.p1, r.p2, "rgba(255,82,82,0.7)", 1.3, [4, 3]);
+        drawDot(r.p1, "#ff5252");
+        drawDot(r.p2, "#3a7ad6");
+      }
+      if (OV.normal) {
+        var arrowLen2 = boundR * 0.32;
+        drawArrow(r.p1, vadd(r.p1, vscale(r.normal, arrowLen2)), "#3ecf8e");
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------
+// Random pose
+// ---------------------------------------------------------------------
+function randomPose() {
+  setPose({ tx: rr(-2.5, 2.5), ty: rr(-2.5, 2.5), tz: rr(-2.5, 2.5), roll: rr(0, 360), pitch: rr(0, 360), yaw: rr(0, 360) });
+}
+
+function wireOverlayChips() {
+  document.querySelectorAll("button.chip[data-ov]").forEach(function (btn) {
+    var key = btn.getAttribute("data-ov");
+    function sync() { btn.classList.toggle("off", !OV[key]); }
+    sync();
+    btn.addEventListener("click", function () {
+      OV[key] = !OV[key];
+      sync();
+      try { localStorage.setItem("coal_playground_overlays", JSON.stringify(OV)); } catch (e) {}
+      render();
+    });
+  });
+}
+
+document.getElementById("resetViewBtn").addEventListener("click", function () { orbit.azim = 0.7; orbit.elev = 0.35; orbit.zoom = 1; render(); });
+canvas.addEventListener("wheel", function (e) { e.preventDefault(); orbit.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, orbit.zoom * (e.deltaY < 0 ? 0.9 : 1 / 0.9))); render(); }, { passive: false });
+document.getElementById("solveBtn").addEventListener("click", doSolve);
+document.getElementById("randomBtn").addEventListener("click", function () { randomPose(); clearResult("Random pose set -- press Solve."); render(); });
+document.getElementById("touchBtn").addEventListener("click", snapToTouching);
+["shapeA", "shapeB"].forEach(function (id) {
+  document.getElementById(id).addEventListener("change", function () {
+    var side = id === "shapeA" ? "A" : "B";
+    shapeState[side] = defaultOf(SHAPES[parseInt(this.value, 10)].kind);
+    buildParamInputs(side);
+    clearResult();
+    render();
+  });
+});
+["A", "B"].forEach(function (side) {
+  document.getElementById("rand" + side).addEventListener("click", function () {
+    shapeState[side] = randomShape(shapeState[side].kind);
+    buildParamInputs(side);
+    clearResult("Shape " + side + " randomized -- press Solve.");
+    render();
+  });
+});
+wireOrbitDrag(canvas, orbit, render);
+wireOverlayChips();
+
+fillSelects();
+CoalModule().then(function (m) {
+  Module = m;
+  syncSliderLabels();
+  render();
+});
+</script>
+
+</body>
+</html>

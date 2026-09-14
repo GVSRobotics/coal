@@ -475,6 +475,27 @@ BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_cone_cylinder) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_truncated_cone_cylinder) {
+  for (size_t i = 0; i < 10; ++i) {
+    Vec2s r = generateRandomVector<2>(Scalar(0.05), 1);
+    Scalar rt = generateRandomNumber(Scalar(0.05), 1);
+    Vec2s h = generateRandomVector<2>(Scalar(0.15), 1);
+    shared_ptr<TruncatedCone> o1(new TruncatedCone(r(0), rt, h(0)));
+    shared_ptr<Cylinder> o2(new Cylinder(r(1), h(1)));
+
+    size_t gjk_max_iterations = GJK_DEFAULT_MAX_ITERATIONS;
+    Scalar gjk_tolerance = Scalar(1e-6);
+    size_t epa_max_iterations = 250;
+    Scalar epa_tolerance = Scalar(1e-3);
+    test_normal_and_nearest_points(*o1.get(), *o2.get(), gjk_max_iterations,
+                                   gjk_tolerance, epa_max_iterations,
+                                   epa_tolerance);
+    test_normal_and_nearest_points(*o2.get(), *o1.get(), gjk_max_iterations,
+                                   gjk_tolerance, epa_max_iterations,
+                                   epa_tolerance);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_cylinder_ellipsoid) {
   for (size_t i = 0; i < 10; ++i) {
     shared_ptr<Ellipsoid> o1(
@@ -528,6 +549,23 @@ BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_cylinder_halfspace) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_truncated_cone_halfspace) {
+  for (size_t i = 0; i < 10; ++i) {
+    Scalar rb = generateRandomNumber(Scalar(0.05), 1);
+    Scalar rt = generateRandomNumber(Scalar(0.05), 1);
+    Scalar h = generateRandomNumber(Scalar(0.15), 1);
+    shared_ptr<TruncatedCone> o1(new TruncatedCone(rb, rt, h));
+    const Scalar half(0.5);
+    Scalar offset = generateRandomNumber(-half, half);
+    Vec3s n = Vec3s::Random();
+    n.normalize();
+    shared_ptr<Halfspace> o2(new Halfspace(n, offset));
+
+    test_normal_and_nearest_points(*o1.get(), *o2.get());
+    test_normal_and_nearest_points(*o2.get(), *o1.get());
+  }
+}
+
 BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_cone_plane) {
   for (size_t i = 0; i < 10; ++i) {
     Scalar r = generateRandomNumber(Scalar(0.05), 1);
@@ -549,6 +587,23 @@ BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_cylinder_plane) {
     Scalar r = generateRandomNumber(Scalar(0.05), 1);
     Scalar h = generateRandomNumber(Scalar(0.15), 1);
     shared_ptr<Cylinder> o1(new Cylinder(r, h));
+    const Scalar half(0.5);
+    Scalar offset = generateRandomNumber(-half, half);
+    Vec3s n = Vec3s::Random();
+    n.normalize();
+    shared_ptr<Plane> o2(new Plane(n, offset));
+
+    test_normal_and_nearest_points(*o1.get(), *o2.get());
+    test_normal_and_nearest_points(*o2.get(), *o1.get());
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_normal_and_nearest_points_truncated_cone_plane) {
+  for (size_t i = 0; i < 10; ++i) {
+    Scalar rb = generateRandomNumber(Scalar(0.05), 1);
+    Scalar rt = generateRandomNumber(Scalar(0.05), 1);
+    Scalar h = generateRandomNumber(Scalar(0.15), 1);
+    shared_ptr<TruncatedCone> o1(new TruncatedCone(rb, rt, h));
     const Scalar half(0.5);
     Scalar offset = generateRandomNumber(-half, half);
     Vec3s n = Vec3s::Random();
