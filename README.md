@@ -1,4 +1,17 @@
-# Coal — An extension of the Flexible Collision Library
+# Coal — GVSRobotics fork
+
+This repository is the [GVSRobotics fork](https://github.com/GVSRobotics/coal) of
+[Coal](https://github.com/coal-library/coal), an extension of the Flexible Collision Library.
+It adds a `TruncatedCone` primitive and an interactive browser-based solver playground.
+The library keeps the Coal name and existing interfaces (`coal::`, `include/coal`, and
+`import coal`). See [Changes in this fork](#changes-in-this-fork) and
+[Install this fork from source](#install-this-fork-from-source).
+
+**[Try the interactive Coal Solver Playground](https://gvsrobotics.github.io/coal/)**
+— position shapes and explore collision and distance results directly in your browser,
+with no installation required.
+
+The build, documentation, coverage, and package badges below refer to **upstream Coal**.
 
 <p align="center">
   <a href="https://gitlab.laas.fr/coal-library/coal/commits/devel/"><img src="https://gitlab.laas.fr/coal-library/coal/badges/devel/pipeline.svg" alt="Pipeline status"/></a>
@@ -19,19 +32,39 @@ If you use **Coal** in your projects and research papers, we would appreciate it
 
 ## Table of contents
 
-- [Coal — An extension of the Flexible Collision Library](#coal--an-extension-of-the-flexible-collision-library)
+- [Coal — GVSRobotics fork](#coal--gvsrobotics-fork)
+   * [Changes in this fork](#changes-in-this-fork)
    * [New features](#new-features)
    * [A high-performance library](#a-high-performance-library)
    * [Open-source projects relying on Coal](#open-source-projects-relying-on-coal)
    * [Installation](#installation)
-      + [Conda](#conda)
-      + [Docker](#docker)
+      + [Install this fork from source](#install-this-fork-from-source)
+      + [Conda (upstream)](#conda-upstream)
+      + [Docker (upstream)](#docker-upstream)
    * [C++ example](#c-example)
    * [Python example](#python-example)
    * [Contribution](#contribution)
    * [Core-dev team](#core-dev-team)
    * [Credits](#credits)
    * [Acknowledgments](#acknowledgments)
+
+## Changes in this fork
+
+- **`TruncatedCone` primitive:** a conical frustum with independent bottom and top
+  radii, integrated with collision and distance queries, contact patches,
+  serialization, and both Python bindings.
+- **Solver playground:** [try it online](https://gvsrobotics.github.io/coal/)
+  or open [`visual/index.html`](./visual/index.html) locally in a browser
+  to position primitive shapes and inspect contact points, normals, signed
+  distance/penetration depth, and GJK/EPA geometry. It runs Coal's solvers through
+  the bundled WebAssembly module. See the [playground documentation](./visual/wasm/README.md)
+  for build and test instructions.
+- **Geometry-name fix:** correct `get_node_type_name` reporting for `GEOM_CONVEX32`
+  and subsequent geometry types.
+
+See [CHANGELOG.md](./CHANGELOG.md) for the change history. The features, benchmarks,
+and projects listed below describe upstream Coal; the additions above are maintained
+in this fork.
 
 ## New features
 
@@ -87,23 +120,51 @@ One can observe that GJK-based approaches largely outperform solutions based on 
 
 ## Installation
 
-### Conda
+### Install this fork from source
 
-Coal can be installed from the [conda-forge channel](https://anaconda.org/conda-forge/coal):
+Install [Pixi](https://pixi.sh/latest/#installation) and Git, then clone and build
+this repository:
+
+```bash
+git clone --recurse-submodules --branch devel https://github.com/GVSRobotics/coal.git
+cd coal
+pixi run -e all test
+pixi run -e all cmake --install build
+pixi run -e all python -c "import coal; print(coal.TruncatedCone)"
+```
+
+The `test` task installs the build dependencies, configures and builds Coal, and
+runs its tests. The `all` environment enables Qhull and OctoMap support and builds
+the nanobind Python bindings. The install command places the library and bindings
+in the project-local Pixi environment. Use `pixi run -e all` or `pixi shell -e all`
+to work with that installation.
+
+For an existing clone, run `git submodule update --init --recursive` before
+building. See the [build documentation](./development/build.md) for other
+environments, including the Boost.Python bindings.
+
+### Conda (upstream)
+
+The following command installs **upstream Coal** from the
+[conda-forge channel](https://anaconda.org/conda-forge/coal). To use this fork's
+additions, follow the source installation instructions above.
 
 ```bash
 conda install coal -c conda-forge
 ```
 
-### Docker
+### Docker (upstream)
 
-```
+This image contains **upstream Coal**. Use the source installation above for this fork.
+
+```bash
 docker run --rm -it ghcr.io/coal-library/coal:devel
 ```
 
 ## C++ example
-Both the C++ library and the python bindings can be installed as simply as `conda -c conda-forge install coal`.
-The `.so` library, include files and python bindings will then be installed under `$CONDA_PREFIX/lib`, `$CONDA_PREFIX/include` and `$CONDA_PREFIX/lib/python3.XX/site-packages`.
+Install this fork's C++ library and Python bindings using the
+[source instructions above](#install-this-fork-from-source). The `all` environment
+includes the Qhull support needed by this example's convex-hull construction.
 
 Here is an example of using Coal in C++:
 ```cpp
@@ -200,7 +261,8 @@ import coal
 # Optional:
 # The Pinocchio library is a rigid body algorithms library and has a handy SE3 module.
 # It can be installed as simply as `conda -c conda-forge install pinocchio`.
-# Installing pinocchio also installs coal.
+# Installing pinocchio this way also installs upstream coal.
+# Use this fork's source installation for its additional features.
 import pinocchio as pin
 
 def loadConvexMesh(file_name: str):
@@ -246,11 +308,15 @@ if __name__ == "__main__":
 
 ## Contribution
 
-If you want to ask a question, report a bug, request a new feature or contribute with a pull request, please follow the [contribution guideline](./development/contributing.md).
+For questions, bugs, feature requests, or pull requests specific to this fork,
+use the [GVSRobotics repository](https://github.com/GVSRobotics/coal).
+For contributions to upstream Coal, follow the
+[upstream contribution guideline](./development/contributing.md).
 
 ## Core-dev team
 
-The currently active core developers of **coal** are:
+This fork is maintained by [GVSRobotics](https://github.com/GVSRobotics).
+The **upstream Coal** core developers listed in the inherited documentation are:
 
 -   [Justin Carpentier](https://jcarpent.github.io) (Inria): main developer and manager of the project
 -   [Louis Montaut](https://lmontaut.github.io/) (Inria): main developer

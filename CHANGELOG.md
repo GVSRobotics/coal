@@ -22,10 +22,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `resolveReferences` method to `Contact` and `DistanceResult` to remap the `o1/o2` pointers (typically after serialization/deserialization) ([855](https://github.com/coal-library/coal/pull/855)).
 - Added copy constructors to `Contact::Contact(const Contact& other, const CollisionGeometry* new_o1, const CollisionGeometry* new_o2)` and `DistanceResult::DistanceResult(const DistanceResult& other, const CollisionGeometry* new_o1, const CollisionGeometry* new_o2)` to allow copying a `Contact` or `DistanceResult` while remapping the `o1/o2` pointers to new geometries. This is typically useful in the context of deep-copying ([#856](https://github.com/coal-library/coal/pull/820)).
 - Added the `COAL_EQUAL_OPERATOR_CHECK` macro. This macro can be overridden at compile time, extremely practial for debugging serialization for example. ([#859](https://github.com/coal-library/coal/pull/859))
-- Added the `TruncatedCone` primitive shape (a conical frustum, with independent bottom/top radii), with full support for collision, distance, contact patches, serialization and Python bindings, matching `Cone`/`Cylinder`.
+- GVSRobotics fork: added the `TruncatedCone` primitive shape (a conical frustum, with independent bottom/top radii), with full support for collision, distance, contact patches, serialization and Python bindings, matching `Cone`/`Cylinder`.
+- GVSRobotics fork: added the browser-based solver playground in `visual/`, using Coal compiled to WebAssembly to display collision and distance results and GJK/EPA geometry.
 
 ### Fixed
-- Fixed `get_node_type_name` (in `collision_utility.h`) silently misreporting names for `GEOM_CONVEX32` and every `NODE_TYPE` after it, due to `GEOM_CONVEX16`/`GEOM_CONVEX32` sharing a single table entry.
+- GVSRobotics fork: fixed `get_node_type_name` (in `collision_utility.h`) silently misreporting names for `GEOM_CONVEX32` and every `NODE_TYPE` after it, due to `GEOM_CONVEX16`/`GEOM_CONVEX32` sharing a single table entry.
 
 ### Removed
 - Remove direct dependency to ([#744](https://github.com/coal-library/coal/pull/744)):
@@ -55,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Fix NaNs coming from GJK/EPA when the algorithms (correctly) early stopped. NaNs indicate failure. In the case that GJK/EPA early stopped but ran fine, we set non-computed data to inf instead of NaN.
 
 ### Changed
+- GVSRobotics fork: identify the fork in the README, document its additions and source installation, and distinguish upstream packages and credits while retaining the Coal library and API names.
 - Float precision ([#665](https://github.com/coal-library/coal/pull/665))
   - Rename `CoalScalar` to `Scalar`
   - Add option to switch between (default) double precision and float precision

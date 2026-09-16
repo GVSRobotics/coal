@@ -203,6 +203,7 @@
   <div class="title-row">
     <h1>coal Solver Playground</h1>
     <span class="live">live wasm</span>
+    <a href="https://github.com/GVSRobotics/coal">View library on GitHub</a>
   </div>
   <p>The real <code>coal::collide</code> / <code>coal::distance</code> / <code>coal::computeContactPatch</code>
      &mdash; the exact GJK/EPA collision library (compiled to WebAssembly, running right here, no
@@ -345,7 +346,7 @@
 
 <footer>
   Source: this demo lives in <code>visual/</code> of the
-  <a href="https://github.com/coal-library/coal">coal</a> repository (<code>visual/wasm/coal_wasm.cpp</code>
+  <a href="https://github.com/GVSRobotics/coal">GVSRobotics/coal</a> repository (<code>visual/wasm/coal_wasm.cpp</code>
   is the embind binding, built with Emscripten straight from coal's own sources &mdash; see
   <code>visual/wasm/build.sh</code>). Shape&nbsp;A sits at the origin with identity orientation;
   shape&nbsp;B's pose is whatever the sliders set, matching <code>coal::collide(o1, tf1, o2, tf2)</code>'s
