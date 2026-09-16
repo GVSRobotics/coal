@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - GVSRobotics fork: fixed `get_node_type_name` (in `collision_utility.h`) silently misreporting names for `GEOM_CONVEX32` and every `NODE_TYPE` after it, due to `GEOM_CONVEX16`/`GEOM_CONVEX32` sharing a single table entry.
+- GVSRobotics fork: corrected the segment-intersection determinant in contact patches so crossing edges produce one point and parallel overlaps retain their endpoints.
+- GVSRobotics fork: classify diagonal line contacts correctly in the solver playground, independently of the contact patch's tangent basis, and preserve their full extent when reducing thin patches to two endpoints.
 
 ### Removed
 - Remove direct dependency to ([#744](https://github.com/coal-library/coal/pull/744)):

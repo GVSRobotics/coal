@@ -21,6 +21,9 @@ straight from coal's own solver running in-browser).
   works straight off `file://` or any static host, GitHub Pages included).
 - `test_node.js` — a quick Node-only smoke test of the built module (a few
   hand-picked shape pairs, run directly, no browser).
+- `test_manifold.js` — assertion-based regression tests for point, line,
+  and surface contacts, including crossing edges, overlapping parallel
+  edges, and diagonal line contacts.
 - `cdp_test.js` — a headless-browser regression test that drives the actual
   `index.html` page (via the Chrome DevTools Protocol against a
   `--headless=new` Chromium/Edge instance you point it at on port 9333):
@@ -57,6 +60,7 @@ collide/distance/GJK/EPA needs.
 
 ```sh
 node test_node.js                 # quick sanity check of the wasm module alone
+node test_manifold.js             # contact geometry and manifold classification
 # in another terminal: launch a headless browser with remote debugging, e.g.
 #   msedge --headless=new --disable-gpu --remote-debugging-port=9333 --user-data-dir=<tmp dir> about:blank
 node cdp_test.js                  # drives the real page through that browser

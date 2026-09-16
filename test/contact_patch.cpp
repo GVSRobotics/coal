@@ -826,6 +826,102 @@ BOOST_AUTO_TEST_CASE(convex_convex) {
   }
 }
 
+namespace {
+
+// The edge [a, b] lies in z = 0; the other vertices lie strictly on one side.
+ConvexTpl<Triangle32> makeEdgeContactTetrahedron(const Vec3s& a, const Vec3s& b,
+                                                 Scalar z) {
+  const Vec3s center = (a + b) / 2;
+  const Vec3s edge = b - a;
+  const Vec3s transverse = Vec3s(-edge.y(), edge.x(), 0).normalized();
+  auto points =
+      std::make_shared<std::vector<Vec3s>>(std::initializer_list<Vec3s>{
+          a, b, center + transverse + z * Vec3s::UnitZ(),
+          center - transverse + z * Vec3s::UnitZ()});
+  auto faces = std::make_shared<std::vector<Triangle32>>(
+      std::initializer_list<Triangle32>{
+          Triangle32(0, 1, 2), Triangle32(0, 3, 1), Triangle32(0, 2, 3),
+          Triangle32(1, 3, 2)});
+  if (z > 0) {
+    for (auto& face : *faces) std::swap(face[1], face[2]);
+  }
+  return ConvexTpl<Triangle32>(points, 4, faces, 4);
+}
+
+}  // namespace
+
+BOOST_AUTO_TEST_CASE(crossing_edges_have_one_contact_point) {
+  const auto lower =
+      makeEdgeContactTetrahedron(Vec3s(-1, 0, 0), Vec3s(1, 0, 0), Scalar(-1));
+  const Transform3s identity;
+  const ContactPatchRequest request;
+  const Scalar tol = Scalar(1e-8);
+
+  // The two slopes exercise both signs of the segment intersection determinant.
+  for (int slope : {-1, 1}) {
+    const auto upper = makeEdgeContactTetrahedron(
+        Vec3s(-1, -slope, 0), Vec3s(1, slope, 0), Scalar(1));
+    for (bool swapped : {false, true}) {
+      BOOST_TEST_CONTEXT("slope=" << slope << ", swapped=" << swapped) {
+        const auto* first = swapped ? &upper : &lower;
+        const auto* second = swapped ? &lower : &upper;
+        const Vec3s normal(0, 0, swapped ? -1 : 1);
+        CollisionResult collision;
+        collision.addContact(Contact(first, second, Contact::NONE,
+                                     Contact::NONE, Vec3s::Zero(), normal,
+                                     Scalar(0)));
+        ContactPatchResult result(request);
+        computeContactPatch(first, identity, second, identity, collision,
+                            request, result);
+
+        BOOST_REQUIRE_EQUAL(result.numContactPatches(), size_t(1));
+        const ContactPatch& patch = result.getContactPatch(0);
+        BOOST_REQUIRE_EQUAL(patch.size(), size_t(1));
+        BOOST_CHECK_SMALL(patch.getPointShape1(0).norm(), tol);
+        BOOST_CHECK_SMALL(patch.getPointShape2(0).norm(), tol);
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE(parallel_edges_preserve_overlap_endpoints) {
+  const auto lower =
+      makeEdgeContactTetrahedron(Vec3s(-1, 0, 0), Vec3s(1, 0, 0), Scalar(-1));
+  const auto upper = makeEdgeContactTetrahedron(
+      Vec3s(Scalar(-0.5), 0, 0), Vec3s(Scalar(1.5), 0, 0), Scalar(1));
+  const Transform3s identity;
+  const ContactPatchRequest request;
+  const Scalar tol = Scalar(1e-8);
+
+  for (bool swapped : {false, true}) {
+    BOOST_TEST_CONTEXT("swapped=" << swapped) {
+      const auto* first = swapped ? &upper : &lower;
+      const auto* second = swapped ? &lower : &upper;
+      const Vec3s normal(0, 0, swapped ? -1 : 1);
+      CollisionResult collision;
+      collision.addContact(Contact(first, second, Contact::NONE, Contact::NONE,
+                                   Vec3s::Zero(), normal, Scalar(0)));
+      ContactPatchResult result(request);
+      computeContactPatch(first, identity, second, identity, collision, request,
+                          result);
+
+      BOOST_REQUIRE_EQUAL(result.numContactPatches(), size_t(1));
+      const ContactPatch& patch = result.getContactPatch(0);
+      BOOST_REQUIRE_EQUAL(patch.size(), size_t(2));
+      const Vec3s p = patch.getPointShape1(0);
+      const Vec3s q = patch.getPointShape1(1);
+      BOOST_CHECK_SMALL((std::min)(p.x(), q.x()) + Scalar(0.5), tol);
+      BOOST_CHECK_SMALL((std::max)(p.x(), q.x()) - Scalar(1), tol);
+      for (size_t i = 0; i < patch.size(); ++i) {
+        BOOST_CHECK_SMALL(patch.getPointShape1(i).tail<2>().norm(), tol);
+        BOOST_CHECK_SMALL(patch.getPointShape2(i).tail<2>().norm(), tol);
+        BOOST_CHECK_SMALL(
+            (patch.getPointShape1(i) - patch.getPointShape2(i)).norm(), tol);
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(edge_case_segment_segment) {
   // This case covers the segment-segment edge case of contact patches.
   // Two tetrahedrons make contact on one of their edge.

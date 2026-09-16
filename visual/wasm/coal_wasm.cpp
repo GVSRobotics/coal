@@ -297,8 +297,8 @@ void runDiagnosticGJK(const S1& s1, const Transform3s& tf1, const S2& s2,
 // Dimension is read directly off the RAW (unsimplified) patch's own 2D
 // local-frame point cloud (ContactPatch::points(), already expressed in the
 // patch's own (x, y) tangent basis -- see ContactPatch::addPoint) via its
-// axis-aligned bounding extent: negligible in both axes -> point; negligible
-// in one axis only -> line; otherwise -> a genuine 2D surface.
+// diameter and distance from the line through its farthest pair. This is
+// independent of the tangent basis: a diagonal line is still a line.
 void addManifold(const ShapeBase* shapeA, const Transform3s& tf1,
                  const ShapeBase* shapeB, const Transform3s& tf2,
                  const CollisionResult& colres, val& out) {
@@ -316,30 +316,48 @@ void addManifold(const ShapeBase* shapeA, const Transform3s& tf1,
   if (n == 0) return;
 
   const std::vector<Vec2s>& pts2d = patch.points();
-  Scalar minX = pts2d[0].x(), maxX = pts2d[0].x();
-  Scalar minY = pts2d[0].y(), maxY = pts2d[0].y();
-  for (const auto& p : pts2d) {
-    minX = (std::min)(minX, p.x()); maxX = (std::max)(maxX, p.x());
-    minY = (std::min)(minY, p.y()); maxY = (std::max)(maxY, p.y());
+  size_t first = 0, last = 0;
+  Scalar diameterSquared = 0;
+  for (size_t i = 0; i < n; ++i) {
+    for (size_t j = i + 1; j < n; ++j) {
+      const Scalar squaredDistance = (pts2d[j] - pts2d[i]).squaredNorm();
+      if (squaredDistance > diameterSquared) {
+        diameterSquared = squaredDistance;
+        first = i;
+        last = j;
+      }
+    }
   }
-  const Scalar extentX = maxX - minX, extentY = maxY - minY;
-  const Scalar maxExtent = (std::max)(extentX, extentY);
-  const Scalar minExtent = (std::min)(extentX, extentY);
   const Scalar relTol = Scalar(1e-3);
+  const Vec2s axis = pts2d[last] - pts2d[first];
+  Scalar maxCross = 0;
+  for (const auto& p : pts2d) {
+    const Vec2s offset = p - pts2d[first];
+    maxCross = (std::max)(
+        maxCross, std::abs(axis.x() * offset.y() - axis.y() * offset.x()));
+  }
 
   std::string kind;
   size_t target;
-  if (n == 1 || maxExtent < Scalar(1e-9)) {
-    kind = "point"; target = 1;
-  } else if (minExtent < relTol * maxExtent) {
-    kind = "line"; target = 2;
+  if (n == 1 || diameterSquared < Scalar(1e-18)) {
+    kind = "point";
+    target = 1;
+  } else if (maxCross <= relTol * diameterSquared) {
+    kind = "line";
+    target = 2;
   } else {
-    kind = "surface"; target = 4;
+    kind = "surface";
+    target = 4;
   }
   target = (std::min)(target, n);
 
   ContactPatch reduced(target);
-  if (target < n) {
+  if (kind == "line") {
+    reduced = patch;
+    // The first raw vertex can lie inside the line's span. Keep the
+    // farthest pair so reduction always preserves both endpoints.
+    reduced.points() = {pts2d[first], pts2d[last]};
+  } else if (target < n) {
     ContactPatchSimplifierMaxArea simplifier;
     simplifier.compute(patch, target, reduced);
   } else {
